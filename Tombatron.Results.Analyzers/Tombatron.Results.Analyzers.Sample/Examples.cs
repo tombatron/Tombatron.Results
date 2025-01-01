@@ -77,6 +77,19 @@ public class Examples
 
         return whatever;
     }
+    
+    public string ErrorBecauseTheSwitchStatementIsntExhaustive()
+    {
+        // Error here as the switch statement doesn't handles all cases. 
+        var workResult = DoWork();
+
+        var whatever =  workResult switch // Warning because of non-exhaustive switch-statement.
+        {
+            Error<string> => "error"
+        };
+
+        return whatever;
+    }    
 
     public string NoErrorBecauseImUsingUnwrap()
     {

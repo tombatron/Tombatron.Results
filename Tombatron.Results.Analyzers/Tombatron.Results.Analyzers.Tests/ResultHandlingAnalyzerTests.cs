@@ -6,7 +6,7 @@ namespace Tombatron.Results.Analyzers.Tests;
 public class ResultHandlingAnalyzerTests
 {
     [Fact]
-    public async Task ErrorBecauseResultIsNotHandled()
+    public async Task NoErrorBecauseNothingIsDoneWithResult()
     {
         const string testCode = @"
         using Tombatron.Results;
@@ -21,13 +21,61 @@ public class ResultHandlingAnalyzerTests
             Result<int> SomeMethod() => new Ok<int>(42);
         }
         ";
-
-        var expectedDiagnostic = VerifyCS.Diagnostic("TBTRA001")
-            .WithSpan(8, 29, 8, 35)
-            .WithMessage("You must handle all possible cases of the result of type `Result<T>`. 'Ok' and 'Error' are unhandled.");
         
-        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode, expectedDiagnostic);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
     }
+    
+    [Fact]
+    public async Task NoErrorBecauseResultIsReturnedWithoutBeingAccessed()
+    {
+        const string testCode = @"
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                Result<int> result = SomeMethod();
+            }
+
+            Result<int> WrapSomeWork() 
+            { 
+                var workResult = SomeMethod(); 
+
+                return workResult;
+            }
+
+            Result<int> SomeMethod() => new Ok<int>(42);
+        }
+        ";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }    
+    
+    [Fact]
+    public async Task NoErrorBecauseResultIsDirectlyReturned()
+    {
+        const string testCode = @"
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                Result<int> result = SomeMethod();
+            }
+
+            Result<int> WrapSomeWork() 
+            { 
+                return SomeMethod(); 
+            }
+
+            Result<int> SomeMethod() => new Ok<int>(42);
+        }
+        ";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }        
     
     [Fact]
     public async Task ErrorBecauseErrorIsNotHandled()

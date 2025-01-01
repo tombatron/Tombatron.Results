@@ -29,6 +29,8 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
             var typeInfo = context.SemanticModel.GetTypeInfo(localDeclaration.Declaration.Type);
             var type = typeInfo.Type;
 
+            var variableUsageCount = 0;
+            
             if (type is INamedTypeSymbol { Name: "Result", Arity: 1 } namedType &&
                 namedType.ContainingAssembly.Name == "Tombatron.Results")
             {
@@ -78,9 +80,20 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
 
                         return false;
                     }));
+                
+                // Count how many times the variable was used.
+                var variableUsages = parentBlock.DescendantNodes().OfType<IdentifierNameSyntax>()
+                    .Count(node => node.Identifier.Text == variable.Identifier.Text && node.Parent is not ReturnStatementSyntax);
 
                 var hasOkCase = false;
                 var hasErrorCase = false;
+
+                if (variableUsages == 0)
+                {
+                    // Since the result was never used, we don't have a problem here. Unused results are not our problem. 
+                    // TODO: Maybe this should be a warning?
+                    hasOkCase = hasErrorCase = true;
+                }
 
                 foreach (var reference in references)
                 {

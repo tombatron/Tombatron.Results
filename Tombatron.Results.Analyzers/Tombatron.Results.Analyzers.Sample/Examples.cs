@@ -69,11 +69,13 @@ public class Examples
         // No error here as the case state effectively handles all cases because of the default case. 
         var workResult = DoWork();
 
-        return workResult switch
+        var whatever =  workResult switch
         {
             Ok<string> => "ok",
             Error<string> => "error"
         };
+
+        return whatever;
     }
 
     public string NoErrorBecauseImUsingUnwrap()

@@ -178,6 +178,43 @@ public class ResultHandlingAnalyzerTests
         {
             void Main()
             {
+                var example = Testing();
+
+                Console.WriteLine(example);
+            }
+
+            string Testing()
+            {
+                Result<int> workResult = SomeMethod();
+
+                var whatever = workResult switch 
+                {
+                    Ok<int> => "":)"",
+                    Error<int> => "":(""
+                };
+
+                return whatever;
+            }
+
+            Result<int> SomeMethod() => new Ok<int>(42);
+        }
+        ";
+
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);        
+    }
+    
+    [Fact]
+    public async Task SuppressedBecausePatternMatchingCoversOkAndErrorPart2()
+    {
+        // TODO: Figure out what the difference is between the usage here and the usage in the above test case. 
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
                 Result<int> result = SomeMethod();
 
                 var handledValue = result switch

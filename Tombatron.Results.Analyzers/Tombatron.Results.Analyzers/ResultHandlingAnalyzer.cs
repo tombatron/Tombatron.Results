@@ -88,12 +88,27 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
 
                     foreach (var arm in switchStatement?.Arms ?? Enumerable.Empty<SwitchExpressionArmSyntax>())
                     {
+                        INamedTypeSymbol? typeSymbol = null;
+                        
                         // Check the pattern of the arm
                         switch (arm.Pattern)
                         {
                             case DeclarationPatternSyntax declarationPattern:
                                 // Get the type of the pattern
-                                var typeSymbol = context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
+                                typeSymbol = context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
+
+                                if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                {
+                                    hasOkCase = true;
+                                }
+                                else if (typeSymbol?.Name == "Error" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                {
+                                    hasErrorCase = true;
+                                }
+                                break;
+                            
+                            case TypePatternSyntax typePattern:
+                                typeSymbol = context.SemanticModel.GetTypeInfo(typePattern.Type).Type as INamedTypeSymbol;
 
                                 if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {

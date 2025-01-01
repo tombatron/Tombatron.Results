@@ -68,7 +68,7 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                 return false;
                             }
 
-                            if (!methodSymbol.ContainingType.Name.StartsWith("Tombatron.Results"))
+                            if (!methodSymbol.ContainingAssembly.Name.StartsWith("Tombatron.Results"))
                             {
                                 return false;
                             }

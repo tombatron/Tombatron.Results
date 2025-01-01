@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.Analyzers
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results", "Tombatron.Results\Tombatron.Results.csproj", "{E67D4396-7DA6-4831-B56E-E435CD9956BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.All", "Tombatron.Results.All\Tombatron.Results.All.csproj", "{56B9377A-3D74-4802-9ECB-AEA49994181F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{E67D4396-7DA6-4831-B56E-E435CD9956BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E67D4396-7DA6-4831-B56E-E435CD9956BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E67D4396-7DA6-4831-B56E-E435CD9956BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56B9377A-3D74-4802-9ECB-AEA49994181F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56B9377A-3D74-4802-9ECB-AEA49994181F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56B9377A-3D74-4802-9ECB-AEA49994181F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56B9377A-3D74-4802-9ECB-AEA49994181F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

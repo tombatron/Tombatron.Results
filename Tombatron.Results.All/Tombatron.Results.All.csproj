@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>Tombatron.Results.All</Title>
+    <Authors>Tom Hanks (tombatron)</Authors>
+    <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place. </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tombatron.Results.Analyzers\Tombatron.Results.Analyzers\Tombatron.Results.Analyzers.csproj" />
+    <ProjectReference Include="..\Tombatron.Results\Tombatron.Results.csproj" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+</Project>

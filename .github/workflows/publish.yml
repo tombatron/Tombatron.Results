@@ -1,0 +1,53 @@
+﻿name: Publish Dotnet Package
+
+on:
+  workflow_dispatch:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        
+      - uses: nuget/setup-nuget@v1
+        with:
+          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
+          nuget-version: '5.x'
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          
+      - name: Clean
+        run: dotnet clean ./Tombatron.Results.sln --configuration Release && dotnet nuget locals all --clear
+        
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build Tombatron.Results
+        run: dotnet build Tombatron.Results/Tombatron.Results.csproj --no-restore --configuration Release
+        
+      - name: Build Tombatron.Results.Analyzers
+        run: dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj --no-restore --configuration Release        
+        
+      - name: Build Tombatron.Results.All
+        run: dotnet build Tombatron.Results.All/Tombatron.Results.All.csproj --no-restore --configuration Release
+        
+      - name: Publish NuGet Package (Tombatron.Results)
+        env:
+          api_key: ${{secrets.NUGET_API_KEY}}
+        run: "nuget push Tombatron.Results/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"
+        
+      - name: Publish NuGet Package (Tombatron.Results.Analyzers)
+        env:
+          api_key: ${{secrets.NUGET_API_KEY}}
+        run: "nuget push Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"        
+        
+      - name: Publish NuGet Package (Tombatron.Results.All)
+        env:
+          api_key: ${{secrets.NUGET_API_KEY}}
+        run: "nuget push Tombatron.Results.All/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"        

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
@@ -11,6 +11,13 @@
         <RootNamespace>Tombatron.Results.Analyzers</RootNamespace>
         <AssemblyName>Tombatron.Results.Analyzers</AssemblyName>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <Title>Tombatron.Results.Analyzers</Title>
+        <Authors>Tom Hanks (tombatron)</Authors>
+        <Description>This package contains analyzers for use with the Tombatron.Results Nuget package, and assures that the expected usage of the project is enforced. </Description>
+        
+        <Version>1.0.0</Version>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,5 +43,16 @@
             <DependentUpon>Resources.resx</DependentUpon>
         </Compile>
     </ItemGroup>
+    
+    <PropertyGroup>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageReadFile>README.md</PackageReadFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>    
 </Project>

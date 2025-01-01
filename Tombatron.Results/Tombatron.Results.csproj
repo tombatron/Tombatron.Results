@@ -4,8 +4,25 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
+        
+        <Version>1.0.0</Version>
         <FileVersion>1.0.0</FileVersion>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        
+        <Title>Tombatron.Results</Title>
+        <Authors>Tom Hanks (tombatron)</Authors>
+        <Description>Basic implementation of the results pattern, intended to be used with a special Roslyn analyzer. </Description>
     </PropertyGroup>
-
+    
+    <PropertyGroup>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageReadFile>README.md</PackageReadFile>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>

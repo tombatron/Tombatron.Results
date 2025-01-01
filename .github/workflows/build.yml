@@ -25,7 +25,7 @@ jobs:
         run: dotnet build Tombatron.Results/Tombatron.Results.csproj
         
       - name: Build Tombatron.Results.Analyzers
-        run: dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombaton.Results.Analyzers.csproj
+        run: dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj
         
       - name: Run Tests
         run: dotnet test --no-build --verbosity normal

@@ -28,4 +28,4 @@ jobs:
         run: dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj
         
       - name: Run Tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test .\Tombatron.Results.Analyzers\Tombatron.Results.Analyzers.Tests\Tombatron.Results.Analyzers.Tests.csproj --no-build

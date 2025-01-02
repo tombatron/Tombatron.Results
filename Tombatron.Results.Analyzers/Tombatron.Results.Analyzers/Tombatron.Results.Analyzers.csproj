@@ -15,14 +15,10 @@
         <Authors>Tom Hanks (tombatron)</Authors>
         <Description>This package contains analyzers for use with the Tombatron.Results Nuget package, and assures that the expected usage of the project is enforced. </Description>
         
-        <Version>1.0.3</Version>
-        <AssemblyVersion>1.0.3</AssemblyVersion>
-        <FileVersion>1.0.3</FileVersion>
+        <Version>1.0.5</Version>
+        <AssemblyVersion>1.0.5</AssemblyVersion>
+        <FileVersion>1.0.5</FileVersion>
     </PropertyGroup>
-
-    <!-- <ItemGroup>
-        <Analyzer Include="$(OutputPath)Tombatron.Results.Analyzers.dll" Pack="true" />
-    </ItemGroup>     -->
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">

@@ -1,0 +1,39 @@
+﻿name: Publish Dotnet Meta Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        
+      - uses: nuget/setup-nuget@v1
+        with:
+          nuget-version: '5.x'
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          
+      - name: Clean
+        run: dotnet clean ./Tombatron.Results.sln --configuration Release && dotnet nuget locals all --clear
+        
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build Projects
+        run: |
+          dotnet build Tombatron.Results/Tombatron.Results.csproj --no-restore --configuration Release
+          dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj --no-restore --configuration Release
+          dotnet pack Tombatron.Results.All/Tombatron.Results.All.csproj --no-restore --configuration Release
+        
+      - name: Publish NuGet Packages
+        run: |
+          dotnet nuget push Tombatron.Results.All/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate

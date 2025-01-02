@@ -18,8 +18,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
           
-      - name: Restore dependencies
-        run: dotnet restore
+      # - name: Restore dependencies
+      #   run: dotnet restore
         
       - name: Build Tombatron.Results
         run: dotnet build Tombatron.Results/Tombatron.Results.csproj

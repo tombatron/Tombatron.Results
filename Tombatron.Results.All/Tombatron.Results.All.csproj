@@ -7,15 +7,23 @@
     <Authors>Tom Hanks (tombatron)</Authors>
     <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
 
-    <Version>1.0.3</Version>
-    <FileVersion>1.0.3</FileVersion>
-    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <Version>1.0.4</Version>
+    <FileVersion>1.0.4</FileVersion>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tombatron.Results" Version="1.0.1" />
-    <PackageReference Include="Tombatron.Results.Analyzers" Version="1.0.1" PrivateAssets="all" />
+    <PackageReference Include="Tombatron.Results" Version="1.0.3" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tombatron.Results.Analyzers" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Include analyzers in the analyzers folder -->
+  <ItemGroup>
+    <None Include="..\Tombatron.Results.Analyzers\Tombatron.Results.Analyzers\bin\Release\netstandard2.0\Tombatron.Results.Analyzers.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+  </ItemGroup>  
   
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

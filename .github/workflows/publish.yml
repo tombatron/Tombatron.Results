@@ -36,6 +36,6 @@ jobs:
         
       - name: Publish NuGet Packages
         run: |
-          dotnet nuget push Tombatron.Results/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
-          dotnet nuget push Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
-          dotnet nuget push Tombatron.Results.All/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
+          dotnet nuget push Tombatron.Results/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+          dotnet nuget push Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+          dotnet nuget push Tombatron.Results.All/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate

@@ -2,19 +2,19 @@
 
 on:
   workflow_dispatch:
-    branches: [ master ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
         
       - uses: nuget/setup-nuget@v1
         with:
-          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
           nuget-version: '5.x'
           
       - name: Setup .NET
@@ -28,26 +28,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
         
-      - name: Build Tombatron.Results
-        run: dotnet build Tombatron.Results/Tombatron.Results.csproj --no-restore --configuration Release
+      - name: Build Projects
+        run: |
+          dotnet build Tombatron.Results/Tombatron.Results.csproj --no-restore --configuration Release
+          dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj --no-restore --configuration Release
+          dotnet build Tombatron.Results.All/Tombatron.Results.All.csproj --no-restore --configuration Release
         
-      - name: Build Tombatron.Results.Analyzers
-        run: dotnet build Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/Tombatron.Results.Analyzers.csproj --no-restore --configuration Release        
-        
-      - name: Build Tombatron.Results.All
-        run: dotnet build Tombatron.Results.All/Tombatron.Results.All.csproj --no-restore --configuration Release
-        
-      - name: Publish NuGet Package (Tombatron.Results)
-        env:
-          api_key: ${{secrets.NUGET_API_KEY}}
-        run: "nuget push Tombatron.Results/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"
-        
-      - name: Publish NuGet Package (Tombatron.Results.Analyzers)
-        env:
-          api_key: ${{secrets.NUGET_API_KEY}}
-        run: "nuget push Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"        
-        
-      - name: Publish NuGet Package (Tombatron.Results.All)
-        env:
-          api_key: ${{secrets.NUGET_API_KEY}}
-        run: "nuget push Tombatron.Results.All/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $api_key"        
+      - name: Publish NuGet Packages
+        run: |
+          nuget push Tombatron.Results/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $NUGET_API_KEY
+          nuget push Tombatron.Results.Analyzers/Tombatron.Results.Analyzers/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $NUGET_API_KEY
+          nuget push Tombatron.Results.All/bin/Release/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $NUGET_API_KEY

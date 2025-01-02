@@ -5,7 +5,11 @@
     <Nullable>enable</Nullable>
     <Title>Tombatron.Results.All</Title>
     <Authors>Tom Hanks (tombatron)</Authors>
-    <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place. </Description>
+    <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
+
+    <Version>1.0.1</Version>
+    <FileVersion>1.0.1</FileVersion>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

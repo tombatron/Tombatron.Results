@@ -15,10 +15,14 @@
         <Authors>Tom Hanks (tombatron)</Authors>
         <Description>This package contains analyzers for use with the Tombatron.Results Nuget package, and assures that the expected usage of the project is enforced. </Description>
         
-        <Version>1.0.1</Version>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
-        <FileVersion>1.0.1</FileVersion>
+        <Version>1.0.3</Version>
+        <AssemblyVersion>1.0.3</AssemblyVersion>
+        <FileVersion>1.0.3</FileVersion>
     </PropertyGroup>
+
+    <!-- <ItemGroup>
+        <Analyzer Include="$(OutputPath)Tombatron.Results.Analyzers.dll" Pack="true" />
+    </ItemGroup>     -->
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
@@ -54,5 +58,13 @@
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>    
+
+    <ItemGroup>
+      <!-- Add the DLL produced by the current project to the NuGet package -->
+      <None Include="$(OutputPath)\$(AssemblyName).dll"
+            Pack="true"
+            PackagePath="analyzers/dotnet/cs"
+            Visible="false" />
     </ItemGroup>    
 </Project>

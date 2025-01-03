@@ -25,9 +25,6 @@ jobs:
       - name: Clean
         run: dotnet clean ./Tombatron.Results.sln --configuration Release && dotnet nuget locals all --clear
         
-      # - name: Restore dependencies
-      #   run: dotnet restore
-        
       - name: Build Projects
         run: |
           dotnet pack Tombatron.Results/Tombatron.Results.csproj --configuration Release

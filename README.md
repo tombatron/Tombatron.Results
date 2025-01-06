@@ -27,6 +27,26 @@ The following are the related published packages.
 
 Usage of the simplistic result pattern implementation is... simple!
 
+Let's say that you have a method that returns a `string`, the method signature might look something like:
+
+```csharp
+public string MyExampleMethod()
+```
+
+Instead of directly returning a `string` type directly, we'll wrap our result with the generic `Result<T>` class, so now our method signature will look like:
+
+```csharp
+public Result<string> MyExampleMethod()
+```
+
+Next, we need to create an instance of `Result<T>` or in this case `Result<string>`. `Result<T>` is an abstract class, so we can't directly create an instance of it, so instead we'll leverage one of the two static factory methods that exist on the `Result<T>` type to create our result. 
+
+The first method is `Result<T>.Ok(T Value)`. This method will return a concrete instance of the `Ok<T>` class (which inherits from the `Result<T>` class). You simply pass in the value you want to wrap as the sole parameter and you're good to go. 
+
+The next method is `Result<T>.Error(string message)`. You'll use this method to communicate issues that occurred within a method. This static factory method will return a concrete instance of `Error<T>`.
+
+
+
 The following examples demonstrate different ways of handling a method that reads from a file and returns the content.
 
 ```csharp

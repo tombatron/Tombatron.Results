@@ -4,7 +4,7 @@
 
 ## Overview
 
-What you have here is a basic implementation of the ["Results pattern"](https://www.milanjovanovic.tech/blog/functional-error-handling-in-dotnet-with-the-result-pattern) which by itself isn't. No, this one has a Roslyn analyzer that was inspired by the Rust language, who's `Option` type has requirements that if not met will throw compile time errors. 
+What you have here is a basic implementation of the ["Results pattern"](https://www.milanjovanovic.tech/blog/functional-error-handling-in-dotnet-with-the-result-pattern) which by itself isn't that interesting. No, this one has a Roslyn analyzer that was inspired by the Rust language, who's `Option` type has requirements that if not met will throw compile time errors. 
 
 Is that useful in a .NET-based application? I have no idea, but I thought it would be fun to build so here we are. 
 
@@ -43,107 +43,94 @@ Next, we need to create an instance of `Result<T>` or in this case `Result<strin
 
 The first method is `Result<T>.Ok(T Value)`. This method will return a concrete instance of the `Ok<T>` class (which inherits from the `Result<T>` class). You simply pass in the value you want to wrap as the sole parameter and you're good to go. 
 
+**Example:**
+
+```csharp
+var okValue = Result<string>.Ok("Hi friend!");
+```
+
+Above I mentioned that `Result<T>.Ok(T value)` is a "static factory method". If you'd rather construct the `Ok<T>` class directly, that's fine too. The lone constructor parameter is the value that you're wrapping. 
+
+**Example:**
+
+```csharp
+var okValue = new Ok<string>("Sup bruh.");
+```
+
 The next method is `Result<T>.Error(string message)`. You'll use this method to communicate issues that occurred within a method. This static factory method will return a concrete instance of `Error<T>`.
 
-
-
-The following examples demonstrate different ways of handling a method that reads from a file and returns the content.
+**Example:**
 
 ```csharp
-// No special handling, just throw an exception!
+var errorValue = Result<string>.Error("Oh noes!");
+```
+
+Again, like the `Ok<T>` class, we can directly construct the `Error<T>` class instead of using the static factory method. 
+
+**Example:**
+
+```csharp
+var errorValue = new Error<string>("What did you do?!");
+```
+
+That's really all there is to creating a result instance, but what about handling a result instance?
+
+Well, the first thing that I'll say is that you should try to always implement handling in your code for both possiblities of `Ok<T>` or `Error<T>`. In fact, if you install the attendant Roslyn analyzer ([Tombatron.Results.Analyzers](https://www.nuget.org/packages/Tombatron.Results.Analyzers/)) it'll raise a compiler error if you don't!
+
+The following are some different ways that you could deal with a result value. 
+
+First, let's take a look at using a pattern matching if-statement.
+
+```csharp
+public void ExampleMethod()
+{
+    var resultObject = GetResultObject(); // I'm terrible at creating examples.
+
+    if (resultObject is Ok<SomeNonExistantThing> ok) // Names are even more difficult. 
+    {
+        // Do some stuff
+    }
+
+    if (resultObject is Error<SomeNonExistantThing> error) // Seriously.
+    {
+        // Do something completely different. 
+    }
+}
+```
+
+Since a `Result<T>` can only be an instance of `Ok<T>` or `Error<T>` you've covered all of the possibilities, so in this case the Roslyn analyzer wouldn't complain. 
+
+Now let's take a look at using pattern matching with a switch statment. 
+
+```csharp
 public string ExampleMethod()
 {
-    return File.ReadAllText(@"/home/doesnt_exist.txt");
-}
+    var resultObject = GetResultObject(); // I'm still terrible.
 
-public void Main()
-{
-    try
+    return resultObject switch 
     {
-        var fileContents = ExampleMethod();
-
-        // Do something with `fileContents`.
-    }
-    catch (FileNotFoundException)
-    {
-        // Produce a message to the user stating that the file didn't exist. 
-    }
+        Ok<string> => "OK",
+        Error<string> err => err.
+        _ => "HackerMan!"
+    };
 }
 ```
 
-The above isn't really ideal since we're effectively using exception handling for flow control. You can do your own deep dive on why you should avoid that. 
+Simple enough. 
 
-```csharp
-// Avoid the usage of exceptions and return `null` if the file doesn't exist. 
-public string? ExampleMethod()
-{
-    var fileName = @"/home/doesnt_exist.txt";
+**BUT!** What if you don't want to go through the motions of handling each possible outcome? Well, I ripped a page out of the Rust handbook and provided the methods `Unwrap()` and `UnwrapOf(T defaultValue)`. 
 
-    if (File.Exists(fileName))
-    {
-        return File.ReadAllText(fileName);
-    } 
-    else
-    {
-        return null;
-    }
-}
+The `Unwrap()` method will assume you're after the `Ok<T>` value of the result, but if you call `Unwrap()` on an value that isn't `Ok<T>` the library will panic... er... it'll throw a `ResultUnwrapException`.
 
-public void Main()
-{
-    var fileContents = ExampleMethod();
-
-    if (fileContents is null)
-    {
-        // Do something with `fileContents`.
-    }
-    else
-    {
-        // Produce a message to the user stating that the file didn't exist.
-    }
-}
-```
-
-This is a little better since we're not using exceptions for flow control, but now we're attributing special meaning to a `null` value which in the long run is likely to cause maintainability issues. But, .NET is getting better at handling nullability so if you stay disciplined this can work for you. 
-
-```csharp
-// Use the "Results pattern" to return a value or indicate failure. 
-public Result<string> ExampleMethod()
-{
-    var fileName = @"/home/doesnt_exist.txt";
-
-    if (File.Exists(fileName))
-    {
-        return Result<string>.Error("The file didn't exist.");
-    }
-    else 
-    {
-        return Result<string>.Ok(File.ReadAllText(fileName));
-    }
-}
-
-public void Main()
-{
-    var fileContents = ExampleMethod();
-
-    if (fileContents is Ok<string> ok)
-    {
-        // Do something with `fileContents`.
-    }
-
-    if (fileContents is Error<string> error)
-    {
-        // Produce a message to the user stating that the file didn't exist. 
-    }
-}
-```
-
-This is what we're going with since it doesn't use exceptions for flow control, or attribute special meaning to a `null` value.
+Alternatively, you can call the `UnwrapOr` method which will receive an argument of the value you'd like to return in the event that the instance of `Result<T>` is an `Error<T>`. The only catch here is that the default value has to be the same type as that wrapped value of the result. 
 
 ### Tombatron.Results.Analyzer
 
+My ulterior motive for creating this library was to give me an excuse to learn a little bit about developing a Roslyn analyzer. The canned examples and simple use cases didn't really interest me. You know what did interest me? How Rust will refuse to compile if you don't handle both branches (I know there are caveats to this, settle down) of an instance of `Option<T>`.
 
+The following is an example of the kind of error that you can expect if you don't handle both cases of a `Result<T>` instance. 
 
+![](.github/compiler_error.png)
 
 ## Building
 

@@ -20,3 +20,13 @@ public abstract class Result<T> where T : notnull
     public T UnwrapOr(T defaultValue) => 
         this is Ok<T> ok ? ok.Value : defaultValue;    
 }
+
+public abstract class Result
+{
+    public static readonly Result Ok = new Ok();
+    
+    public static Result Error(string message) => 
+        new Error(message);
+    
+    // Since the Ok (not-generic) type can't contain a value, does it make sense to have an "Unwrap" method?
+}

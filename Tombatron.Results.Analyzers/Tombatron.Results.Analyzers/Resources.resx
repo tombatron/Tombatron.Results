@@ -48,4 +48,13 @@
     <data name="TBTRA001Description" xml:space="preserve">
         <value>Ensure that all possible states of Result&lt;T&gt; are properly handled.</value>
     </data>
+    <data name="TBTRA002Description" xml:space="preserve">
+        <value>Ensure that all possible states of Result are properly handled.</value>
+    </data>
+    <data name="TBTRA002MessageFormat" xml:space="preserve">
+        <value>You must handle all possible cases of the result of type `Result`. {0} {1} unhandled.</value>
+    </data>
+    <data name="TBTRA002Title" xml:space="preserve">
+        <value>Result must be fully handled.</value>
+    </data>
 </root>

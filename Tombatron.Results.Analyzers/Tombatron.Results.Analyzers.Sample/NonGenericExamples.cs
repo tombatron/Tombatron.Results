@@ -5,9 +5,9 @@ namespace Tombatron.Results.Analyzers.Sample;
 
 // If you don't see warnings, build the Analyzers Project.
 
-public class Examples
+public class NonGenericExamples
 {
-    public Result<string> DontHaveToHandleResultBecauseWeAreReturningEntireResult()
+    public Result DontHaveToHandleResultBecauseWeAreReturningEntireResult()
     {
         // No compiler error would be thrown here because the Result<string> typed result
         // from the DoWork method is passed as the result. Since we're not handling the
@@ -25,9 +25,9 @@ public class Examples
         // case are unhandled. 
         var workResult = DoWork();
 
-        if (workResult is Ok<string> okResult)
+        if (workResult is Ok)
         {
-            return okResult.Value;
+            return "Whatever";
         }
 
         return string.Empty;
@@ -38,12 +38,12 @@ public class Examples
         // No compiler error here as every possible result type is handled.
         var workResult = DoWork();
 
-        if (workResult is Ok<string> ok)
+        if (workResult is Ok ok)
         {
             return "ok";
         }
 
-        if (workResult is Error<string> error)
+        if (workResult is Error error)
         {
             return "error";
         }
@@ -58,8 +58,8 @@ public class Examples
 
         return workResult switch
         {
-            Ok<string> => "ok",
-            Error<string> => "error",
+            Ok => "ok",
+            Error => "error",
             _ => "whatever"
         };
     }
@@ -71,8 +71,8 @@ public class Examples
 
         var whatever =  workResult switch
         {
-            Ok<string> => "ok",
-            Error<string> => "error",
+            Ok => "ok",
+            Error => "error",
             _ => "whoa"
         };
 
@@ -84,38 +84,19 @@ public class Examples
     {
         // Error here as the switch statement doesn't handles all cases. 
         var workResult = DoWork();
-        Result<string>.Error("The file didn't exist.");
+        
         var whatever =  workResult switch // Warning because of non-exhaustive switch-statement.
         {
-            Error<string> => "error"
+            Error => "error"
         };
 
         return whatever;
     }    
-
-    public string NoErrorBecauseImUsingUnwrap()
-    {
-        // I would expect a compiler warning here because we're only partially handling the Result<T>
-        // type, and calling `Unwrap` should be considered a last resort because we're not handling
-        // all of the possibilities, and if the result isn't Ok<T> then an exception will result. 
-        var workResult = DoWork();
-
-        return workResult.Unwrap();
-    }
-
-    public string NoErrorWarningBecauseDefaultValueProvided()
-    {
-        // No warning here because by providing a default value we're essentially handling the Warn<T>
-        // and Error<T> cases. 
-        var workResult = DoWork();
-
-        return workResult.UnwrapOr("hello");
-    }
-
-    public Result<string> DoWork()
+    
+    public Result DoWork()
     {
 
-        var justOn = new Ok<string>("sup");
+        var justOn = Result.Ok;
 
         return justOn;
         // No compiler error because I'm immediately returning the result. 

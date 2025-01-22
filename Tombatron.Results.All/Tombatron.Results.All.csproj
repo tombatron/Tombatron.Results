@@ -7,17 +7,17 @@
     <Authors>Tom Hanks (tombatron)</Authors>
     <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
 
-    <Version>1.0.6</Version>
-    <FileVersion>1.0.6</FileVersion>
-    <AssemblyVersion>1.0.6</AssemblyVersion>
+    <Version>1.1.0</Version>
+    <FileVersion>1.1.0</FileVersion>
+    <AssemblyVersion>1.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tombatron.Results" Version="1.0.6" />
+    <PackageReference Include="Tombatron.Results" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tombatron.Results.Analyzers" Version="1.0.6" PrivateAssets="all" />
+    <PackageReference Include="Tombatron.Results.Analyzers" Version="1.1.0" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Include analyzers in the analyzers folder -->

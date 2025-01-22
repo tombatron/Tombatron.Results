@@ -148,5 +148,32 @@ namespace Tombatron.Results.Analyzers {
                 return ResourceManager.GetString("TBTRA001Title", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ensure that all possible states of Result are properly handled..
+        /// </summary>
+        internal static string TBTRA002Description {
+            get {
+                return ResourceManager.GetString("TBTRA002Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must handle all possible cases of the result of type `Result`. {0} {1} unhandled..
+        /// </summary>
+        internal static string TBTRA002MessageFormat {
+            get {
+                return ResourceManager.GetString("TBTRA002MessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Result must be fully handled..
+        /// </summary>
+        internal static string TBTRA002Title {
+            get {
+                return ResourceManager.GetString("TBTRA002Title", resourceCulture);
+            }
+        }
     }
 }

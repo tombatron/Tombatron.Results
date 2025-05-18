@@ -309,4 +309,34 @@ public class ResultHandlingAnalyzerTests
 
         await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);        
     }        
+    
+    [Fact]
+    public async Task SuppressCompilerWarningForExhaustiveResultSwitch()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                Result<int> result = SomeMethod();
+
+                var handledValue = result switch
+                {
+                    Ok<int> ok => ""ok"",
+                    Error<int> err => ""err""
+                };
+
+                Console.WriteLine(handledValue);
+            }
+
+            Result<int> SomeMethod() => new Ok<int>(42);
+        }
+        ";
+
+        // Test that CS8509 is suppressed by our suppressor
+        await VerifyCS.VerifySuppressionAsync<ResultTypeSwitchSuppressor>(testCode, "CS8509");        
+    }    
 }

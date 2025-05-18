@@ -40,8 +40,10 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                 var parentBlock = variable.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
 
                 if (parentBlock == null)
+                {
                     // I guess we're not in a code block...
                     continue;
+                }
 
                 // Look for switches or if-statements handling the variable that we detected up above. 
                 var references = parentBlock.DescendantNodes()

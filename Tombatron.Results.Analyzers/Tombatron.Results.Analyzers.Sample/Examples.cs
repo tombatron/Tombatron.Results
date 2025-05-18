@@ -73,7 +73,7 @@ public class Examples
         {
             Ok<string> => "ok",
             Error<string> => "error",
-            _ => "whoa"
+            //_ => "whoa"
         };
 
 
@@ -120,5 +120,17 @@ public class Examples
         return justOn;
         // No compiler error because I'm immediately returning the result. 
         //return Result<string>.Ok("hello world");
+    }
+
+    public Result<string> DefaultSwitchCaseIsntNeeded()
+    {
+        // No warning on the switch statement because there are only two cases to handle.
+        var workResult = DoWork();
+        
+        return workResult switch
+        {
+            Ok<string> ok => ok,
+            Error<string> error => error
+        };
     }
 }

@@ -60,7 +60,7 @@ public class NonGenericExamples
         {
             Ok => "ok",
             Error => "error",
-            _ => "whatever"
+            //_ => "whatever" <-- Don't need this since I've suppressed CS8509.
         };
     }
 

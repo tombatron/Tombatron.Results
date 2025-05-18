@@ -6,12 +6,12 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Tombatron.Results.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ResultTypeSwitchSuppressor : DiagnosticSuppressor
+public partial class ResultTypeSwitchSuppressor : DiagnosticSuppressor
 {
     private static readonly SuppressionDescriptor SwitchExpressionExhaustiveRule = new(
-        id: "TBTRA901",
-        suppressedDiagnosticId: "CS8509",
-        justification: "Switch expression is exhaustive for Tombatron.Results.Result type, otherwise there's an error.");
+        id: SuppressorId,
+        suppressedDiagnosticId: SuppressedId,
+        justification: Justification);
     
     public override ImmutableArray<SuppressionDescriptor> SupportedSuppressions =>
         ImmutableArray.Create(SwitchExpressionExhaustiveRule);
@@ -20,7 +20,7 @@ public class ResultTypeSwitchSuppressor : DiagnosticSuppressor
     {
         foreach (var diagnostic in context.ReportedDiagnostics)
         {
-            if (diagnostic.Id != SwitchExpressionExhaustiveRule.Id)
+            if (diagnostic.Id != SwitchExpressionExhaustiveRule.SuppressedDiagnosticId)
             {
                 continue;
             }

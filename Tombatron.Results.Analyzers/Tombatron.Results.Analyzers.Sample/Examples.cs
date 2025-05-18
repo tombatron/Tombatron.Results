@@ -60,7 +60,7 @@ public class Examples
         {
             Ok<string> => "ok",
             Error<string> => "error",
-            _ => "whatever"
+            //_ => "whatever"
         };
     }
 

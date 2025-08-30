@@ -24,6 +24,4 @@ public abstract class Result
     
     public static Result Error(string message) => 
         new Error(message);
-    
-    // Since the Ok (not-generic) type can't contain a value, does it make sense to have an "Unwrap" method?
 }

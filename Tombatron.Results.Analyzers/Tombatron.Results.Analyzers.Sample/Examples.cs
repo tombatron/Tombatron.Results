@@ -56,36 +56,22 @@ public class Examples
         // No error here as the pattern matching covers all of the possibilities.
         var workResult = DoWork();
 
+        // Warning suppressed because both the Ok and Error cases are handled.
         return workResult switch
         {
             Ok<string> => "ok",
             Error<string> => "error",
-            //_ => "whatever"
         };
-    }
-
-    public string NoErrorsPatternMatchingAgain()
-    {
-        // No error here as the case state effectively handles all cases because of the default case. 
-        var workResult = DoWork();
-
-        var whatever =  workResult switch
-        {
-            Ok<string> => "ok",
-            Error<string> => "error",
-            //_ => "whoa"
-        };
-
-
-        return whatever;
     }
     
     public string ErrorBecauseTheSwitchStatementIsntExhaustive()
     {
         // Error here as the switch statement doesn't handles all cases. 
         var workResult = DoWork();
+        
         Result<string>.Error("The file didn't exist.");
-        var whatever =  workResult switch // Warning because of non-exhaustive switch-statement.
+        
+        var whatever =  workResult switch
         {
             Error<string> => "error"
         };

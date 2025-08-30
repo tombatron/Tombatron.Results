@@ -111,12 +111,11 @@ public string ExampleMethod()
     {
         Ok<string> => "OK",
         Error<string> err => err.
-        _ => "HackerMan!"
     };
 }
 ```
 
-Simple enough. 
+Simple enough. Notice that I'm not handling the default case. You won't get a compiler warning about not handling the default case, because we know that there are only two possibilities (Ok and Error) so in this case we're using the analyzer to suppress the warning.
 
 **BUT!** What if you don't want to go through the motions of handling each possible outcome? Well, I ripped a page out of the Rust handbook and provided the methods `Unwrap()` and `UnwrapOf(T defaultValue)`. 
 

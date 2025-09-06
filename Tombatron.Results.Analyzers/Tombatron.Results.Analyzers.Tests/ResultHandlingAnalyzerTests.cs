@@ -122,7 +122,7 @@ public class ResultHandlingAnalyzerTests
 
                 if (result is Error<int> error)
                 {
-                    Console.WriteLine(error.Message);
+                    Console.WriteLine(error.Messages[0]);
                 }
             }
 

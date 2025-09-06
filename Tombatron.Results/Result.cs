@@ -13,25 +13,16 @@ public class Result<T> where T : notnull
     public static Result<T> Error(string message) => 
         new Error<T>([message]);
 
-    public T Unwrap()
+    public T Unwrap() => this switch
     {
-        if (this is Ok<T> ok)
-        {
-            return ok.Value;
-        }
-
-        if (this is Error<T> error)
-        {
-            if (error.Messages.Length == 1)
-            {
-                throw new ResultUnwrapException($"[ERROR] [{GetType().Name}]: {error.Messages[0]}");
-            }
-
-            throw new ResultUnwrapAggregateException($"[MULTIPLE ERRORS] [{GetType().Name}]", error.Messages.Select(m => new ResultUnwrapException(m)));
-        }
-
-        throw new ResultUnwrapException($"[ERROR] [{GetType().Name}]: Unexpected result type.");
-    }
+        Ok<T> ok => ok.Value,
+        Error<T> { Messages.Length: 1 } error => 
+            throw new ResultUnwrapException($"[ERROR] [{GetType().Name}]: {error.Messages[0]}"),
+        Error<T> error => 
+            throw new ResultUnwrapAggregateException($"[MULTIPLE ERRORS] [{GetType().Name}]", 
+                error.Messages.Select(m => new ResultUnwrapException(m))),
+        _ => throw new ResultUnwrapException($"[ERROR] [{GetType().Name}]: Unexpected result type.")
+    };
 
     public T UnwrapOr(T defaultValue) =>
         this is Ok<T> ok ? ok.Value : defaultValue;    

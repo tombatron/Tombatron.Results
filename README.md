@@ -65,12 +65,30 @@ The next method is `Result<T>.Error(string message)`. You'll use this method to 
 var errorValue = Result<string>.Error("Oh noes!");
 ```
 
+For scenarios where you need to report multiple errors at once, you can use `Result<T>.Error(string[] messages)`:
+
+**Example:**
+
+```csharp
+var multipleErrors = Result<string>.Error(new[] { 
+    "Validation failed for field 'Name'", 
+    "Validation failed for field 'Email'", 
+    "Validation failed for field 'Phone'" 
+});
+```
+
 Again, like the `Ok<T>` class, we can directly construct the `Error<T>` class instead of using the static factory method. 
 
 **Example:**
 
 ```csharp
 var errorValue = new Error<string>("What did you do?!");
+
+// Or with multiple messages:
+var multipleErrors = new Error<string>(new[] {
+    "Database connection failed",
+    "Retry attempts exhausted"
+});
 ```
 
 That's really all there is to creating a result instance, but what about handling a result instance?

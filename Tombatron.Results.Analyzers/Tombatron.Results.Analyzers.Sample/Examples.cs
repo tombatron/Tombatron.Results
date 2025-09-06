@@ -64,14 +64,26 @@ public class Examples
         };
     }
     
+    public string NoErrorsPatternMatchingMultipleErrorMessages()
+    {
+        // No error here as the pattern matching covers all of the possibilities.
+        var workResult = Result<string>.Error(["The file didn't exist.", "The path was incorrect."]);
+
+        return workResult switch
+        {
+            Ok<string> => "ok",
+            Error<string> => "error",
+        };
+    }
+    
     public string ErrorBecauseTheSwitchStatementIsntExhaustive()
     {
         // Error here as the switch statement doesn't handles all cases. 
         var workResult = DoWork();
-        
+
         Result<string>.Error("The file didn't exist.");
-        
-        var whatever =  workResult switch
+
+        var whatever = workResult switch
         {
             Error<string> => "error"
         };

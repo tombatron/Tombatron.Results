@@ -122,7 +122,7 @@ public class NonGenericResultHandlingAnalyzerTests
 
                 if (result is Error error)
                 {
-                    Console.WriteLine(error.Message);
+                    Console.WriteLine(error.Messages[0]);
                 }
             }
 

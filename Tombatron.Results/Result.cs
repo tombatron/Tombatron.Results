@@ -35,6 +35,6 @@ public abstract class Result
     public static Result Error(string message) =>
         new Error([message]);
         
-    public static Result Error(IEnumerable<string> messages) => 
+    public static Result Error(string[] messages) => 
         new Error(messages);
 }

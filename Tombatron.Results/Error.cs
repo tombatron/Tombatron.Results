@@ -1,11 +1,15 @@
 ﻿namespace Tombatron.Results;
 
-public class Error<T>(string message) : Result<T> where T : notnull
+public class Error<T>(string[] messages) : Result<T> where T : notnull
 {
-    public string Message => message;
+    public Error(string message) : this([message]) { }
+
+    public string[] Messages => messages;
 }
 
-public class Error(string message) : Result
+public class Error(IEnumerable<string> messages) : Result
 {
-    public string Message => message;
+    public Error(string message) : this([message]) { }
+
+    public IEnumerable<string> Messages => messages;
 }

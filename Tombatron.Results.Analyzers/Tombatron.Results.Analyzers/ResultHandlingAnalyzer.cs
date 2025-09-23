@@ -36,7 +36,9 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
             {
                 // We've found an instance of `Result<T>` in the method. Let's check to see if it's been handled at all...
 
-                // Get the method of block containing the local declaration.
+                // Get the method of block containing the local declaration of the Result<T> type. Remember, a block
+                // isn't necessarily a method, it could be an `if` statement or a `for` loop. I'm just commenting that
+                // because in six months when I get back to this code I'm going to have forgotten.
                 var parentBlock = variable.Ancestors().OfType<BlockSyntax>().FirstOrDefault();
 
                 if (parentBlock == null)
@@ -84,8 +86,17 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                     }));
                 
                 // Count how many times the variable was used.
-                var variableUsages = parentBlock.DescendantNodes().OfType<IdentifierNameSyntax>()
-                    .Count(node => node.Identifier.Text == variable.Identifier.Text && node.Parent is not ReturnStatementSyntax);
+                var variableUsages = parentBlock
+                    .DescendantNodes()
+                    .OfType<IdentifierNameSyntax>()
+                    .Count(node => 
+                        // Let's make sure we're checking the correct variable. 
+                        node.Identifier.Text == variable.Identifier.Text && 
+                        // Let's make sure we're not dinging people for returning a Result<T>.
+                        node.Parent is not ReturnStatementSyntax &&
+                        // We don't count using the result type as a method argument.
+                        !(node.Parent is ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax })
+                    );
 
                 var hasOkCase = false;
                 var hasErrorCase = false;
@@ -147,9 +158,9 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                     {
                         var condition = ifStatement.Condition;
 
-                        if (condition is IsPatternExpressionSyntax isPatternExpression)
+                        void HandlePatternExpressionSyntax(IsPatternExpressionSyntax expression)
                         {
-                            var pattern = isPatternExpression.Pattern;
+                            var pattern = expression.Pattern;
 
                             if (pattern is DeclarationPatternSyntax declarationPattern)
                             {
@@ -165,6 +176,68 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                     hasErrorCase = true;
                                 }
                             }
+
+                            if (pattern is RecursivePatternSyntax recursivePattern)
+                            {
+                                INamedTypeSymbol? typeSymbol = null;
+                                
+                                if (recursivePattern.Type != null)
+                                {
+                                    typeSymbol = context.SemanticModel.GetTypeInfo(recursivePattern.Type).Type as INamedTypeSymbol;
+                                }
+                                else
+                                {
+                                    // Try to infer type from the parent pattern or expression
+                                    var parentIsPattern = recursivePattern.Parent as IsPatternExpressionSyntax;
+                                    if (parentIsPattern != null)
+                                    {
+                                        var expressionType = context.SemanticModel.GetTypeInfo(parentIsPattern.Expression).Type;
+                                        typeSymbol = expressionType as INamedTypeSymbol;
+                                    }
+                                }
+
+                                if (typeSymbol is not null)
+                                {
+                                    if (typeSymbol.Name == "Ok" &&
+                                        typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                    {
+                                        hasOkCase = true;
+                                    } else if (typeSymbol.Name == "Error")
+                                    {
+                                        hasErrorCase = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        void HandleBinaryExpressionSyntax(BinaryExpressionSyntax expression)
+                        {
+                            var left = expression.Left;
+                            var right = expression.Right;
+                            ExpressionSyntax[] sides = [left, right];
+
+                            foreach (var side in sides)
+                            {
+                                if (side is IsPatternExpressionSyntax ie)
+                                {
+                                    HandlePatternExpressionSyntax(ie);
+                                }
+
+                                if (side is BinaryExpressionSyntax be)
+                                {
+                                    HandleBinaryExpressionSyntax(be);
+                                }
+                            }
+                        }
+
+                        if (condition is IsPatternExpressionSyntax isPatternExpression)
+                        {
+                            HandlePatternExpressionSyntax(isPatternExpression);
+                        }
+
+                        if (condition is BinaryExpressionSyntax binaryExpression)
+                        {
+                            HandleBinaryExpressionSyntax(binaryExpression);
                         }
                     }
 

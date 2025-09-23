@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>Tombatron.Results.All</Title>
+    <LangVersion>10.0</LangVersion>
     <Authors>Tom Hanks (tombatron)</Authors>
     <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
 

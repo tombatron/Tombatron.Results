@@ -95,7 +95,7 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                         // Let's make sure we're not dinging people for returning a Result<T>.
                         node.Parent is not ReturnStatementSyntax &&
                         // We don't count using the result type as a method argument.
-                        !(node.Parent is ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax })
+                        node.Parent is not ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax }
                     );
 
                 var hasOkCase = false;

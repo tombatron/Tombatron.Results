@@ -165,7 +165,7 @@ public class NonGenericResultHandlingAnalyzerTests
             .WithSpan(9, 24, 9, 30)
             .WithMessage("You must handle all possible cases of the result of type `Result`. 'Ok' is unhandled.");
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode, expectedDiagnostic);        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode, expectedDiagnostic);        
     }
     
     [Fact]

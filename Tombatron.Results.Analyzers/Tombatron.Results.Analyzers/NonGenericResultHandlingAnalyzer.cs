@@ -50,9 +50,17 @@ public class NonGenericResultHandlingAnalyzer : DiagnosticAnalyzer
                     .ToList();
 
                 // Count how many times the variable was used.
-                var variableUsages = parentBlock.DescendantNodes().OfType<IdentifierNameSyntax>()
-                    .Count(node =>
-                        node.Identifier.Text == variable.Identifier.Text && node.Parent is not ReturnStatementSyntax);
+                var variableUsages = parentBlock
+                    .DescendantNodes()
+                    .OfType<IdentifierNameSyntax>()
+                    .Count(node => 
+                        // Let's make sure we're checking the correct variable. 
+                        node.Identifier.Text == variable.Identifier.Text && 
+                        // Let's make sure we're not dinging people for returning a Result<T>.
+                        node.Parent is not ReturnStatementSyntax &&
+                        // We don't count using the result type as a method argument.
+                        node.Parent is not ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax }
+                    );
 
                 var hasOkCase = false;
                 var hasErrorCase = false;
@@ -135,42 +143,109 @@ public class NonGenericResultHandlingAnalyzer : DiagnosticAnalyzer
 
                     var ifStatement = reference.Ancestors().OfType<IfStatementSyntax>().FirstOrDefault();
 
-                    var condition = ifStatement?.Condition;
-
-                    if (condition is BinaryExpressionSyntax binaryExpression)
+                    if (ifStatement != null)
                     {
-                        var typeSymbol =
-                            context.SemanticModel.GetTypeInfo(binaryExpression.Right).Type as INamedTypeSymbol;
+                        var condition = ifStatement.Condition;
 
-                        if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                        void HandlePatternExpressionSyntax(IsPatternExpressionSyntax expression)
                         {
-                            hasOkCase = true;
+                            var pattern = expression.Pattern;
+
+                            if (pattern is DeclarationPatternSyntax declarationPattern)
+                            {
+                                var typeSymbol =
+                                    context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
+
+                                if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                {
+                                    hasOkCase = true;
+                                }
+                                else if (typeSymbol?.Name == "Error")
+                                {
+                                    hasErrorCase = true;
+                                }
+                            }
+
+                            if (pattern is RecursivePatternSyntax recursivePattern)
+                            {
+                                INamedTypeSymbol? typeSymbol = null;
+                                
+                                if (recursivePattern.Type != null)
+                                {
+                                    typeSymbol = context.SemanticModel.GetTypeInfo(recursivePattern.Type).Type as INamedTypeSymbol;
+                                }
+                                else
+                                {
+                                    // Try to infer type from the parent pattern or expression
+                                    var parentIsPattern = recursivePattern.Parent as IsPatternExpressionSyntax;
+                                    if (parentIsPattern != null)
+                                    {
+                                        var expressionType = context.SemanticModel.GetTypeInfo(parentIsPattern.Expression).Type;
+                                        typeSymbol = expressionType as INamedTypeSymbol;
+                                    }
+                                }
+
+                                if (typeSymbol is not null)
+                                {
+                                    if (typeSymbol.Name == "Ok" &&
+                                        typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                    {
+                                        hasOkCase = true;
+                                    } else if (typeSymbol.Name == "Error")
+                                    {
+                                        hasErrorCase = true;
+                                    }
+                                }
+                            }
                         }
-                        else if (typeSymbol?.Name == "Error")
+                        
+                        void HandleIdentifierNameSyntax(IdentifierNameSyntax identifier)
                         {
-                            hasErrorCase = true;
-                        }
-                    }
-
-                    // Have to handle the case where someone might be using the `IsPatternExpression`. It doesn't make sense for
-                    // the Ok but it's still legal syntax. 
-                    if (condition is IsPatternExpressionSyntax isPatternExpression)
-                    {
-                        var pattern = isPatternExpression.Pattern;
-
-                        if (pattern is DeclarationPatternSyntax declarationPattern)
-                        {
-                            var typeSymbol =
-                                context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
-
+                            var typeSymbol = context.SemanticModel.GetTypeInfo(identifier).Type as INamedTypeSymbol;
+                            
                             if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                             {
                                 hasOkCase = true;
                             }
-                            else if (typeSymbol?.Name == "Error")
+                            else if (typeSymbol?.Name == "Error" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                             {
                                 hasErrorCase = true;
                             }
+                        }                        
+
+                        void HandleBinaryExpressionSyntax(BinaryExpressionSyntax expression)
+                        {
+                            var left = expression.Left;
+                            var right = expression.Right;
+                            ExpressionSyntax[] sides = [left, right];
+
+                            foreach (var side in sides)
+                            {
+                                if (side is IsPatternExpressionSyntax ie)
+                                {
+                                    HandlePatternExpressionSyntax(ie);
+                                }
+
+                                if (side is BinaryExpressionSyntax be)
+                                {
+                                    HandleBinaryExpressionSyntax(be);
+                                }
+
+                                if (side is IdentifierNameSyntax id)
+                                {
+                                    HandleIdentifierNameSyntax(id);
+                                }
+                            }
+                        }
+
+                        if (condition is IsPatternExpressionSyntax isPatternExpression)
+                        {
+                            HandlePatternExpressionSyntax(isPatternExpression);
+                        }
+
+                        if (condition is BinaryExpressionSyntax binaryExpression)
+                        {
+                            HandleBinaryExpressionSyntax(binaryExpression);
                         }
                     }
                     

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,8 +11,8 @@ namespace Tombatron.Results.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ResultHandlingAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => 
-        ImmutableArray.Create(RuleDescription.FullErrorRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        ImmutableArray.Create(RuleDescription.FullErrorRule, NonGenericRuleDescription.FullErrorRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -28,11 +29,10 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
         {
             var typeInfo = context.SemanticModel.GetTypeInfo(localDeclaration.Declaration.Type);
             var type = typeInfo.Type;
+            var isGeneric = type is INamedTypeSymbol { Arity: 1 };
+            var fullyQualifiedTypeName = type?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? string.Empty;
 
-            var variableUsageCount = 0;
-            
-            if (type is INamedTypeSymbol { Name: "Result", Arity: 1 } namedType &&
-                namedType.ContainingAssembly.Name == "Tombatron.Results")
+            if (fullyQualifiedTypeName.StartsWith("global::Tombatron.Results.Result"))
             {
                 // We've found an instance of `Result<T>` in the method. Let's check to see if it's been handled at all...
 
@@ -66,8 +66,9 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                             {
                                 return false;
                             }
-                            
-                            var methodSymbol = context.SemanticModel.GetSymbolInfo(memberAccess).Symbol as IMethodSymbol;
+
+                            var methodSymbol =
+                                context.SemanticModel.GetSymbolInfo(memberAccess).Symbol as IMethodSymbol;
 
                             if (methodSymbol == null)
                             {
@@ -78,20 +79,21 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                             {
                                 return false;
                             }
-                            
-                            return identifier.Identifier.Text == variable.Identifier.Text && methodSymbol.Name.StartsWith("Unwrap");
+
+                            return identifier.Identifier.Text == variable.Identifier.Text &&
+                                   methodSymbol.Name.StartsWith("Unwrap");
                         }
 
                         return false;
                     }));
-                
+
                 // Count how many times the variable was used.
                 var variableUsages = parentBlock
                     .DescendantNodes()
                     .OfType<IdentifierNameSyntax>()
-                    .Count(node => 
+                    .Count(node =>
                         // Let's make sure we're checking the correct variable. 
-                        node.Identifier.Text == variable.Identifier.Text && 
+                        node.Identifier.Text == variable.Identifier.Text &&
                         // Let's make sure we're not dinging people for returning a Result<T>.
                         node.Parent is not ReturnStatementSyntax &&
                         // We don't count using the result type as a method argument.
@@ -115,36 +117,61 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                     foreach (var arm in switchStatement?.Arms ?? Enumerable.Empty<SwitchExpressionArmSyntax>())
                     {
                         INamedTypeSymbol? typeSymbol = null;
-                        
+
                         // Check the pattern of the arm
                         switch (arm.Pattern)
                         {
                             case DeclarationPatternSyntax declarationPattern:
                                 // Get the type of the pattern
-                                typeSymbol = context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
+                                typeSymbol =
+                                    context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
 
-                                if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                if (typeSymbol?.Name == "Ok" &&
+                                    typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {
                                     hasOkCase = true;
                                 }
-                                else if (typeSymbol?.Name == "Error" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                else if (typeSymbol?.Name == "Error" &&
+                                         typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {
                                     hasErrorCase = true;
                                 }
+
+                                break;
+
+                            case TypePatternSyntax typePattern:
+                                typeSymbol =
+                                    context.SemanticModel.GetTypeInfo(typePattern.Type).Type as INamedTypeSymbol;
+
+                                if (typeSymbol?.Name == "Ok" &&
+                                    typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                {
+                                    hasOkCase = true;
+                                }
+                                else if (typeSymbol?.Name == "Error" &&
+                                         typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                {
+                                    hasErrorCase = true;
+                                }
+
                                 break;
                             
-                            case TypePatternSyntax typePattern:
-                                typeSymbol = context.SemanticModel.GetTypeInfo(typePattern.Type).Type as INamedTypeSymbol;
+                            case ConstantPatternSyntax constantPattern:
+                                typeSymbol =
+                                    context.SemanticModel.GetTypeInfo(constantPattern.Expression).Type as INamedTypeSymbol;
 
-                                if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                if (typeSymbol?.Name == "Ok" &&
+                                    typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {
                                     hasOkCase = true;
                                 }
-                                else if (typeSymbol?.Name == "Error" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                else if (typeSymbol?.Name == "Error" &&
+                                         typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {
                                     hasErrorCase = true;
                                 }
-                                break;
+
+                                break;                                 
 
                             case DiscardPatternSyntax:
                                 hasOkCase = hasErrorCase = true;
@@ -167,7 +194,8 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                 var typeSymbol =
                                     context.SemanticModel.GetTypeInfo(declarationPattern.Type).Type as INamedTypeSymbol;
 
-                                if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                                if (typeSymbol?.Name == "Ok" &&
+                                    typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                 {
                                     hasOkCase = true;
                                 }
@@ -180,10 +208,12 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                             if (pattern is RecursivePatternSyntax recursivePattern)
                             {
                                 INamedTypeSymbol? typeSymbol = null;
-                                
+
                                 if (recursivePattern.Type != null)
                                 {
-                                    typeSymbol = context.SemanticModel.GetTypeInfo(recursivePattern.Type).Type as INamedTypeSymbol;
+                                    typeSymbol =
+                                        context.SemanticModel.GetTypeInfo(recursivePattern.Type).Type as
+                                            INamedTypeSymbol;
                                 }
                                 else
                                 {
@@ -191,7 +221,8 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                     var parentIsPattern = recursivePattern.Parent as IsPatternExpressionSyntax;
                                     if (parentIsPattern != null)
                                     {
-                                        var expressionType = context.SemanticModel.GetTypeInfo(parentIsPattern.Expression).Type;
+                                        var expressionType = context.SemanticModel
+                                            .GetTypeInfo(parentIsPattern.Expression).Type;
                                         typeSymbol = expressionType as INamedTypeSymbol;
                                     }
                                 }
@@ -202,11 +233,27 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                         typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
                                     {
                                         hasOkCase = true;
-                                    } else if (typeSymbol.Name == "Error")
+                                    }
+                                    else if (typeSymbol.Name == "Error")
                                     {
                                         hasErrorCase = true;
                                     }
                                 }
+                            }
+                        }
+
+                        void HandleIdentifierNameSyntax(IdentifierNameSyntax identifier)
+                        {
+                            var typeSymbol = context.SemanticModel.GetTypeInfo(identifier).Type as INamedTypeSymbol;
+
+                            if (typeSymbol?.Name == "Ok" && typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                            {
+                                hasOkCase = true;
+                            }
+                            else if (typeSymbol?.Name == "Error" &&
+                                     typeSymbol.ContainingAssembly.Name == "Tombatron.Results")
+                            {
+                                hasErrorCase = true;
                             }
                         }
 
@@ -227,6 +274,11 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                                 {
                                     HandleBinaryExpressionSyntax(be);
                                 }
+
+                                if (side is IdentifierNameSyntax id)
+                                {
+                                    HandleIdentifierNameSyntax(id);
+                                }
                             }
                         }
 
@@ -241,8 +293,10 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                         }
                     }
 
-                    var unwrapCalled = reference as InvocationExpressionSyntax; // Assuming that is this is here, then Unwrap or UnwrapOr was called.
-                    
+                    var unwrapCalled =
+                        reference as
+                            InvocationExpressionSyntax; // Assuming that is this is here, then Unwrap or UnwrapOr was called.
+
                     if (unwrapCalled != null)
                     {
                         // We're going to set these as true because we think that an Unwrap method has been called.
@@ -270,9 +324,13 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                     linkingVerb = "are";
                 }
 
-                if (missingCase != null)
+                if (missingCase is not null)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(RuleDescription.FullErrorRule, variable.Identifier.GetLocation(), missingCase, linkingVerb));
+                    var descriptor =
+                        isGeneric ? RuleDescription.FullErrorRule : NonGenericRuleDescription.FullErrorRule;
+                    
+                    context.ReportDiagnostic(Diagnostic.Create(descriptor,
+                        variable.Identifier.GetLocation(), missingCase, linkingVerb));
                 }
             }
         }

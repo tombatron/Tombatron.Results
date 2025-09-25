@@ -8,17 +8,17 @@
     <Authors>Tom Hanks (tombatron)</Authors>
     <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
 
-    <Version>2.1.0</Version>
-    <FileVersion>2.0.0</FileVersion>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <Version>3.0.0</Version>
+    <FileVersion>3.0.0</FileVersion>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tombatron.Results" Version="2.0.0" />
+    <PackageReference Include="Tombatron.Results" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tombatron.Results.Analyzers" Version="2.0.0" PrivateAssets="all" />
+    <PackageReference Include="Tombatron.Results.Analyzers" Version="3.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Include analyzers in the analyzers folder -->

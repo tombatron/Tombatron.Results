@@ -66,6 +66,7 @@ public class ResultsTests
             Assert.Equal(3, exception.InnerExceptions.Count);
             
             var innerMessages = exception.InnerExceptions.Select(e => e.Message).ToArray();
+            
             Assert.Contains("error 1", innerMessages);
             Assert.Contains("error 2", innerMessages);
             Assert.Contains("error 3", innerMessages);
@@ -171,6 +172,55 @@ public class ResultsTests
         {
             Assert.Throws<ArgumentException>(() => new Error<string>([]));
         }
+        
+
+        [Fact]
+        public void Constructor_WithChildError_ShouldTrackChildError()
+        {
+            var child = new Error<string>("child error");
+            var parent = new Error<string>("parent error", child);
+
+            Assert.NotNull(parent.ChildError);
+            Assert.Equal("child error", parent.ChildError.Message);
+        }
+
+        [Fact]
+        public void Constructor_ShouldCaptureCallerInfo()
+        {
+            var error = CreateErrorWithCallerInfo();
+
+            Assert.Contains("ResultsTests.cs", error.CallerFilePath); // Adjust filename if needed
+            Assert.True(error.CallerLineNumber > 0);
+        }
+
+        private Error<string> CreateErrorWithCallerInfo()
+        {
+            return new Error<string>("caller info test");
+        }
+
+        [Fact]
+        public void ToErrorString_ShouldIncludeMessagesAndCallerInfo()
+        {
+            var error = new Error<string>("formatted error");
+
+            var errorString = error.ToErrorString();
+
+            Assert.Contains("formatted error", errorString);
+            Assert.Contains("ResultsTests.cs", errorString); // Adjust filename if needed
+            Assert.Contains(error.CallerLineNumber.ToString(), errorString);
+        }
+
+        [Fact]
+        public void ToErrorString_ShouldIncludeChildErrorDetails()
+        {
+            var child = new Error<string>("child error");
+            var parent = new Error<string>("parent error", child);
+
+            var errorString = parent.ToErrorString();
+
+            Assert.Contains("parent error", errorString);
+            Assert.Contains("child error", errorString);
+        }
     }
 
     public class ErrorNonGenericTests
@@ -198,6 +248,56 @@ public class ResultsTests
         {
             Assert.Throws<ArgumentException>(() => new Error([]));
         }
+        
+
+        [Fact]
+        public void Constructor_WithChildError_ShouldTrackChildError()
+        {
+            var child = new Error("child error");
+            var parent = new Error("parent error", child);
+
+            Assert.NotNull(parent.ChildError);
+            Assert.Equal("child error", parent.ChildError.Message);
+        }
+
+        [Fact]
+        public void Constructor_ShouldCaptureCallerInfo()
+        {
+            var error = CreateErrorWithCallerInfo();
+
+            Assert.Contains("ResultsTests.cs", error.CallerFilePath); // Adjust filename if needed
+            Assert.True(error.CallerLineNumber > 0);
+        }
+
+        private Error CreateErrorWithCallerInfo()
+        {
+            return new Error("caller info test");
+        }
+
+        [Fact]
+        public void ToErrorString_ShouldIncludeMessagesAndCallerInfo()
+        {
+            var error = new Error("formatted error");
+
+            var errorString = error.ToErrorString();
+
+            Assert.Contains("formatted error", errorString);
+            Assert.Contains("ResultsTests.cs", errorString); // Adjust filename if needed
+            Assert.Contains(error.CallerLineNumber.ToString(), errorString);
+        }
+
+        [Fact]
+        public void ToErrorString_ShouldIncludeChildErrorDetails()
+        {
+            var child = new Error("child error");
+            var parent = new Error("parent error", child);
+
+            var errorString = parent.ToErrorString();
+
+            Assert.Contains("parent error", errorString);
+            Assert.Contains("child error", errorString);
+        }
+        
     }
 
     public class ResultUnwrapExceptionTests

@@ -15,7 +15,7 @@ Installation is a snap. I recommend using the `Tombatron.Results.All` meta-packa
 The following are the related published packages. 
 
 
-|Package Name                                                                                | Description                                                                                        |
+| Package Name                                                                               | Description                                                                                        |
 |--------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | [Tombatron.Results](https://www.nuget.org/packages/Tombatron.Results/)                     | This package contains the results pattern implementation.                                          |
 | [Tombatron.Results.Analyzers](https://www.nuget.org/packages/Tombatron.Results.Analyzers/) | This package contains the Roslyn analyzer for the **Tombatron.Results** package.                   |
@@ -75,6 +75,15 @@ var multipleErrors = Result<string>.Error(new[] {
     "Validation failed for field 'Email'", 
     "Validation failed for field 'Phone'" 
 });
+```
+**(New in Version 3.0)** In the event that you're handling an `Error` result and you need to instantiate a new `Error` without losing reference to the original, you can now nest an `Error` within an `Error` instance:
+
+**Example:**
+
+```csharp
+var childError = Result<string>.Error("Child error.");
+
+var errorWithChild = Result<string>.Error("This would be the parent error.", childError);
 ```
 
 Again, like the `Ok<T>` class, we can directly construct the `Error<T>` class instead of using the static factory method. 

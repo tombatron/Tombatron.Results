@@ -50,10 +50,46 @@ public class Examples
 
         return string.Empty;
     }
+    
+    public string NoErrorsEverythingHandledAgain()
+    {
+        // No compiler error here as every possible result type is handled.
+        var workResult = DoWork();
 
+        if (workResult is Ok<string> ok && ok.Value == "ok")
+        {
+            return "ok";
+        }
+
+        if (workResult is Error<string> error)
+        {
+            return "error";
+        }
+
+        return string.Empty;
+    }
+    
+    public string NoErrorsEverythingHandledAgainWithAPattern()
+    {
+        // No compiler error here as every possible result type is handled.
+        var workResult = DoWork();
+
+        if (workResult is Ok<string> { Value: "ok" })
+        {
+            return "ok";
+        }
+
+        if (workResult is Error<string> error)
+        {
+            return "error";
+        }
+
+        return string.Empty;
+    }
+    
     public string NoErrorsPatternMatching()
     {
-        // No error here as the pattern matching covers all of the possibilities.
+        // No error here as the pattern matching covers all the possibilities.
         var workResult = DoWork();
 
         // Warning suppressed because both the Ok and Error cases are handled.
@@ -66,7 +102,7 @@ public class Examples
     
     public string NoErrorsPatternMatchingMultipleErrorMessages()
     {
-        // No error here as the pattern matching covers all of the possibilities.
+        // No error here as the pattern matching covers all the possibilities.
         var workResult = Result<string>.Error(["The file didn't exist.", "The path was incorrect."]);
 
         return workResult switch
@@ -78,7 +114,7 @@ public class Examples
     
     public string ErrorBecauseTheSwitchStatementIsntExhaustive()
     {
-        // Error here as the switch statement doesn't handles all cases. 
+        // Error here as the switch statement doesn't handle all cases. 
         var workResult = DoWork();
 
         Result<string>.Error("The file didn't exist.");
@@ -95,7 +131,7 @@ public class Examples
     {
         // I would expect a compiler warning here because we're only partially handling the Result<T>
         // type, and calling `Unwrap` should be considered a last resort because we're not handling
-        // all of the possibilities, and if the result isn't Ok<T> then an exception will result. 
+        // all the possibilities, and if the result isn't Ok<T> then an exception will result. 
         var workResult = DoWork();
 
         return workResult.Unwrap();
@@ -130,5 +166,18 @@ public class Examples
             Ok<string> ok => ok,
             Error<string> error => error
         };
+    }
+
+    public Result<string> NoErrorBecauseWeDontConsiderUsingTheResultAsAMethodArgumentAsAUsageForOurPurposes()
+    {
+        var workResult = DoWork();
+
+        SomethingThatNeedsAResult(workResult);
+        
+        return workResult;
+    }
+
+    private void SomethingThatNeedsAResult<T>(Result<T> resultArg) where T : notnull
+    {
     }
 }

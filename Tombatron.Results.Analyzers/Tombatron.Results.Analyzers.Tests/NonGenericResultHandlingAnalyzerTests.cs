@@ -19,10 +19,9 @@ public class NonGenericResultHandlingAnalyzerTests
             }
 
             Result SomeMethod() => Result.Ok;
-        }
-        ";
+        }";
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
     }
     
     [Fact]
@@ -49,7 +48,7 @@ public class NonGenericResultHandlingAnalyzerTests
         }
         ";
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
     }    
     
     [Fact]
@@ -74,7 +73,7 @@ public class NonGenericResultHandlingAnalyzerTests
         }
         ";
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
     }        
     
     [Fact]
@@ -104,7 +103,7 @@ public class NonGenericResultHandlingAnalyzerTests
             .WithSpan(9, 24, 9, 30)
             .WithMessage("You must handle all possible cases of the result of type `Result`. 'Error' is unhandled.");
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode, expectedDiagnostic);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode, expectedDiagnostic);
     }    
     
     [Fact]
@@ -134,7 +133,7 @@ public class NonGenericResultHandlingAnalyzerTests
             .WithSpan(9, 24, 9, 30)
             .WithMessage("You must handle all possible cases of the result of type `Result`. 'Ok' is unhandled.");
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode, expectedDiagnostic);
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode, expectedDiagnostic);
     }
     
     [Fact]
@@ -166,7 +165,7 @@ public class NonGenericResultHandlingAnalyzerTests
             .WithSpan(9, 24, 9, 30)
             .WithMessage("You must handle all possible cases of the result of type `Result`. 'Ok' is unhandled.");
         
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode, expectedDiagnostic);        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode, expectedDiagnostic);        
     }
     
     [Fact]
@@ -202,7 +201,7 @@ public class NonGenericResultHandlingAnalyzerTests
         }
         ";
 
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);        
     }
     
     [Fact]
@@ -232,7 +231,7 @@ public class NonGenericResultHandlingAnalyzerTests
         }
         ";
 
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);        
     }
 
     [Fact]
@@ -261,6 +260,91 @@ public class NonGenericResultHandlingAnalyzerTests
         }
         ";
 
-        await VerifyCS.VerifyAnalyzerAsync<NonGenericResultHandlingAnalyzer>(testCode);        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);        
     }        
+    
+    [Fact]
+    public async Task SuppressedBecauseIfStatementPatternSyntaxIsCovered()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                if (workResult is Ok)
+                {
+                    Console.WriteLine(""ok"");
+                }
+
+                if (workResult is Error error && error.Message == ""whatever"")
+                {
+                    Console.WriteLine(""error"");
+                }
+            }
+
+            Result DoWork() => Result.Ok;
+        }
+        ";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }
+    
+    [Fact]
+    public async Task SuppressedAgainBecauseIfStatementPatternSyntaxIsCovered()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                if (workResult is Ok)
+                {
+                    Console.WriteLine(""ok"");
+                }
+
+                if (workResult is Error {Message: ""whatever""})
+                {
+                    Console.WriteLine(""error"");
+                }
+            }
+
+            Result DoWork() => Result.Ok;
+        }";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }
+
+    [Fact]
+    public async Task SuppressedIfResultIsPassedToAnotherMethodButNotEvaluatedInTheCurrentBlock()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                DoMoreWork(workResult);
+            }
+
+            Result DoWork() => Result.Ok;
+
+            void DoMoreWork(Result result) {}
+        }";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }    
 }

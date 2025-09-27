@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
+#
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.Analyzers", "Tombatron.Results.Analyzers\Tombatron.Results.Analyzers\Tombatron.Results.Analyzers.csproj", "{CD38B75C-1D21-41E9-BAE8-F63169211AF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.Analyzers.Sample", "Tombatron.Results.Analyzers\Tombatron.Results.Analyzers.Sample\Tombatron.Results.Analyzers.Sample.csproj", "{2C1E7EEF-3E76-4F48-946B-45A91A38BA01}"
@@ -12,6 +12,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.All", "Tombatron.Results.All\Tombatron.Results.All.csproj", "{56B9377A-3D74-4802-9ECB-AEA49994181F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tombatron.Results.Tests", "Tombatron.Results.Tests\Tombatron.Results.Tests.csproj", "{BDC4962A-847C-4DB0-B525-7C2F14BF93E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project-assets", "project-assets", "{C27741D2-8B06-4573-A005-1773731F0728}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

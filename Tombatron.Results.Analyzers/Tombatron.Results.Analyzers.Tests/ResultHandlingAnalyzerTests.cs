@@ -338,5 +338,90 @@ public class ResultHandlingAnalyzerTests
 
         // Test that CS8509 is suppressed by our suppressor
         await VerifyCS.VerifySuppressionAsync<ResultTypeSwitchSuppressor>(testCode, "CS8509");        
-    }    
+    }
+
+    [Fact]
+    public async Task SuppressedBecauseIfStatementPatternSyntaxIsCovered()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                if (workResult is Ok<string> ok && ok.Value == ""ok"")
+                {
+                    Console.WriteLine(""ok"");
+                }
+
+                if (workResult is Error<string> error)
+                {
+                    Console.WriteLine(""error"");
+                }
+            }
+
+            Result<string> DoWork() => new Ok<string>(""ok"");
+        }
+        ";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }
+    
+    [Fact]
+    public async Task SuppressedAgainBecauseIfStatementPatternSyntaxIsCovered()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                if (workResult is Ok<string> { Value: ""ok"" })
+                {
+                    Console.WriteLine(""ok"");
+                }
+
+                if (workResult is Error<string> error)
+                {
+                    Console.WriteLine(""error"");
+                }
+            }
+
+            Result<string> DoWork() => new Ok<string>(""ok"");
+        }";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }
+
+    [Fact]
+    public async Task SuppressedIfResultIsPassedToAnotherMethodButNotEvaluatedInTheCurrentBlock()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                DoMoreWork(workResult);
+            }
+
+            Result<string> DoWork() => new Ok<string>(""ok"");
+
+            void DoMoreWork(Result<string> result) {}
+        }";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }
 }

@@ -113,7 +113,7 @@ internal static class ErrorUtilities
         }
         
         var genericArgs = type.GetGenericArguments().Select(t => t.Name).ToArray();
-        var baseName = type.Name[..type.Name.IndexOf('`')];
+        var baseName = type.Name.Substring(0, type.Name.IndexOf('`'));
 
         return $"{baseName}<{string.Join(", ", genericArgs)}>";
     }

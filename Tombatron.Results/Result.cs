@@ -1,4 +1,6 @@
-﻿namespace Tombatron.Results;
+﻿using System.Runtime.CompilerServices;
+
+namespace Tombatron.Results;
 
 public class Result<T> where T : notnull
 {
@@ -7,11 +9,21 @@ public class Result<T> where T : notnull
     public static Result<T> Ok(T value) => 
         new Ok<T>(value);
     
-    public static Result<T> Error(string[] messages) => 
-        new Error<T>(messages);
+    public static Result<T> Error(
+        string[] messages, 
+        IErrorResult? childError = null, 
+        [CallerFilePath] string callerFilePath = "", 
+        [CallerLineNumber] int callerLineNumber = 0) => 
+        // ReSharper disable twice ExplicitCallerInfoArgument
+        new Error<T>(messages, childError, callerFilePath, callerLineNumber);
         
-    public static Result<T> Error(string message) => 
-        new Error<T>([message]);
+    public static Result<T> Error(
+        string message,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) => 
+        // ReSharper disable twice ExplicitCallerInfoArgument
+        new Error<T>([message], childError, callerFilePath, callerLineNumber);
 
     public T Unwrap() => this switch
     {
@@ -32,9 +44,19 @@ public abstract class Result
 {
     public static readonly Result Ok = new Ok();
 
-    public static Result Error(string message) =>
-        new Error([message]);
+    public static Result Error(
+        string message, 
+        IErrorResult? childError = null, 
+        [CallerFilePath] string callerFilePath = "", 
+        [CallerLineNumber] int callerLineNumber = 0) =>
+        // ReSharper disable twice ExplicitCallerInfoArgument
+        new Error([message], childError, callerFilePath, callerLineNumber);
         
-    public static Result Error(string[] messages) => 
-        new Error(messages);
+    public static Result Error(
+        string[] messages,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) => 
+        // ReSharper disable twice ExplicitCallerInfoArgumentB
+        new Error(messages, childError, callerFilePath, callerLineNumber);
 }

@@ -6,72 +6,48 @@ namespace Tombatron.Results;
 
 public class Error<T> : Result<T>, IErrorResult where T : notnull
 {
-    public IErrorResult? ChildError { get; }
-    public string Message { get; }
-    public string[] Messages { get; }
-    public string CallerFilePath { get; }
-    public int CallerLineNumber { get; }
+    public IErrorDetails Details { get; }
+    public IErrorResult? ChildError => Details.ChildError;
+    public string Message => string.Join("\n", Details.Messages);
+    public string[] Messages => Details.Messages;
+    public string CallerFilePath => Details.CallerFilePath;
+    public int CallerLineNumber => Details.CallerLineNumber;
+    
+    public Error(IErrorDetails details) => Details = details;
 
     public Error(string message, IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0) :
-        this(
-            [message],
-            childError,
-            // ReSharper disable twice ExplicitCallerInfoArgument
-            callerFilePath,
-            callerLineNumber
-        )
-    {
-    }
+        [CallerLineNumber] int callerLineNumber = 0) : 
+            this(DefaultErrorDetails.Create(childError, ErrorUtilities.ValidateMessage(message),  callerFilePath, callerLineNumber)) { }
 
     public Error(string[] messages, IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0)
-    {
-        Messages = ErrorUtilities.ValidateMessages(messages);
-        Message = string.Join("\n", Messages);
-
-        ChildError = childError;
-
-        CallerFilePath = callerFilePath;
-        CallerLineNumber = callerLineNumber;
-    }
+        [CallerLineNumber] int callerLineNumber = 0) :
+            this(DefaultErrorDetails.Create(childError, ErrorUtilities.ValidateMessages(messages), callerFilePath, callerLineNumber)) { }
 
     public string ToErrorString() => this.FormatErrorToString();
 }
 
 public class Error : Result, IErrorResult
 {
-    public IErrorResult? ChildError { get; }
-    public string Message { get; }
-    public string[] Messages { get; }
-    public string CallerFilePath { get; }
-    public int CallerLineNumber { get; }
-
+    public IErrorDetails Details { get; }
+    public IErrorResult? ChildError => Details.ChildError;
+    public string Message => string.Join("\n", Details.Messages);
+    public string[] Messages => Details.Messages;
+    public string CallerFilePath => Details.CallerFilePath;
+    public int CallerLineNumber => Details.CallerLineNumber;
+    
+    public Error(IErrorDetails details) => Details = details;
 
     public Error(string[] messages, IErrorResult? childError = null, 
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0)
-    {
-        Messages = ErrorUtilities.ValidateMessages(messages);
-        Message = string.Join("\n", Messages);
-        ChildError = childError;
-        CallerFilePath = callerFilePath;
-        CallerLineNumber = callerLineNumber;
-    }
+        [CallerLineNumber] int callerLineNumber = 0) : 
+            this(DefaultErrorDetails.Create(childError, ErrorUtilities.ValidateMessages(messages), callerFilePath, callerLineNumber)) { }
 
     public Error(string message, IErrorResult? childError = null, 
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) : 
-        this(
-            [message], 
-            childError, 
-            callerFilePath, 
-            callerLineNumber
-        )
-    {
-    }
+            this(DefaultErrorDetails.Create(childError, ErrorUtilities.ValidateMessage(message),  callerFilePath, callerLineNumber)) { }
 
     public string ToErrorString() => this.FormatErrorToString();
 }
@@ -82,6 +58,9 @@ internal static class ErrorUtilities
         messages is not { Length: > 0 }
             ? throw new ArgumentException("At least one error message is required", nameof(messages))
             : messages;
+    
+    public static string[] ValidateMessage(string message) =>
+        ValidateMessages([message]);
 
     public static string FormatErrorToString(this IErrorResult @this)
     {

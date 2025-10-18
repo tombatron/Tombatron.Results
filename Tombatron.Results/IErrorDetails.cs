@@ -1,12 +1,9 @@
 namespace Tombatron.Results;
 
-public interface IErrorResult
+public interface IErrorDetails
 {
-    IErrorDetails Details { get; }
     IErrorResult? ChildError { get; }
-    string Message { get; }
     string[] Messages { get; }
     string CallerFilePath { get; }
     int CallerLineNumber { get; }
-    string ToErrorString();
 }

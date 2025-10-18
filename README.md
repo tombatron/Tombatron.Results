@@ -182,10 +182,23 @@ public class SocketTimeoutError : IErrorDetails
         string message,
         IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0) where T : notnull => 
-            Result<T>.Error(new SocketTimeoutError(childError, [message], callerFilePath, callerLineNumber));
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
+        Create<T>([message], childError, callerFilePath, callerLineNumber);
+
+    public static Result<T> Create<T>(
+        string[] messages,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
+        Result<T>.Error(new SocketTimeoutError(childError, messages, callerFilePath, callerLineNumber));
 }
 ```
+
+Now I know what you're saying, "Yo, that's a lot of boilerplate code..."
+
+I totally agree! So I went and created a Roslyn refactoring that will do a base implementation of the interface including the two static factory methods that I think make this a little more convenient to use. 
+
+![](.github/refactoring_selection_item.png)
 
 In the above example I've gone a little further than strictly necessary by creating a static factory method that will return an instance of the Result<T> type. 
 

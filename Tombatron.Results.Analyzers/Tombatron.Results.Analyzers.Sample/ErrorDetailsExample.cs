@@ -47,11 +47,13 @@ public class SocketTimeoutError : IErrorDetails
         IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
-        // ReSharper disable twice ExplicitCallerInfoArgument
         Create<T>([message], childError, callerFilePath, callerLineNumber);
 
-    public static Result<T> Create<T>(string[] messages, IErrorResult? childError = null,
-        [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) =>
+    public static Result<T> Create<T>(
+        string[] messages,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
         Result<T>.Error(new SocketTimeoutError(childError, messages, callerFilePath, callerLineNumber));
 }
 

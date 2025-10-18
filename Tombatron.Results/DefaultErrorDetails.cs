@@ -17,4 +17,5 @@ public class DefaultErrorDetails : IErrorDetails
     
     internal static IErrorDetails Create(IErrorResult? childError, string[] messages, string callerFilePath, int callerLineNumber) =>
         new DefaultErrorDetails(childError, messages, callerFilePath, callerLineNumber);
+
 }

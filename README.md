@@ -148,7 +148,62 @@ Simple enough. Notice that I'm not handling the default case. You won't get a co
 
 The `Unwrap()` method will assume you're after the `Ok<T>` value of the result, but if you call `Unwrap()` on an value that isn't `Ok<T>` the library will panic... er... it'll throw a `ResultUnwrapException`.
 
-Alternatively, you can call the `UnwrapOr` method which will receive an argument of the value you'd like to return in the event that the instance of `Result<T>` is an `Error<T>`. The only catch here is that the default value has to be the same type as that wrapped value of the result. 
+Alternatively, you can call the `UnwrapOr` method which will receive an argument of the value you'd like to return in the event that the instance of `Result<T>` is an `Error<T>`. The only catch here is that the default value has to be the same type as that wrapped value of the result.
+
+#### ErrorDetails (New in Version 3.2)
+
+In version 3.2 I introduced a new interface called `IErrorDetails`. This interface is used as a way to capture the details of an error type while giving the developer an opportunity to create custom error types. 
+
+What is this good for? Pattern matching on Error types (at least that is why I introduced it...)! Because nobody likes stringly-typed applications. 
+
+Let's say that you want to be able to handle multiple error cases from a single method. For each error case you'd implement a custom `IErrorDetails` implementation. 
+
+For example, let's imagine that I want to be able to handle cases where a socket times out, versus other kinds of errors. 
+
+The first thing that you need to do is create a custom `IErrorDetails` implementation:
+
+```csharp
+public class SocketTimeoutError : IErrorDetails
+{
+    public IErrorResult? ChildError { get; }
+    public string[] Messages { get; }
+    public string CallerFilePath { get; }
+    public int CallerLineNumber { get; }
+
+    public SocketTimeoutError(IErrorResult? childError, string[] messages, string callerFilePath, int callerLineNumber)
+    {
+        ChildError = childError;
+        Messages = messages;
+        CallerFilePath = callerFilePath;
+        CallerLineNumber = callerLineNumber;
+    }
+
+    public static Result<T> Create<T>(
+        string message,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull => 
+            Result<T>.Error(new SocketTimeoutError(childError, [message], callerFilePath, callerLineNumber));
+}
+```
+
+In the above example I've gone a little further than strictly necessary by creating a static factory method that will return an instance of the Result<T> type. 
+
+But now when I want to return a `SocketTimeoutError` as my Error result type I can simply return : 
+
+```csharp
+return SocketTimeoutError.Create<string>("This is a sample socket timeout error.");
+```
+
+...with that I can now use pattern matching for handling multiple error cases instead of having to rely on string analysis. 
+
+```csharp
+if (result is Error<string> { Details: SocketTimeoutError }) 
+{
+    // Do stuff here.
+}
+```
+
 
 ### Tombatron.Results.Analyzer
 

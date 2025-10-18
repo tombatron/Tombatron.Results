@@ -20,7 +20,7 @@ public class ErrorDetailsExample
 
         return result.Unwrap();
     }
-    
+
     public Result<string> GetTypedError()
     {
         return SocketTimeoutError.Create<string>("This is a sample error.");
@@ -46,13 +46,13 @@ public class SocketTimeoutError : IErrorDetails
         string message,
         IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0) where T : notnull => 
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
         // ReSharper disable twice ExplicitCallerInfoArgument
         Create<T>([message], childError, callerFilePath, callerLineNumber);
-    
-    public static Result<T> Create<T>(string[] messages, IErrorResult? childError = null, [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) =>
+
+    public static Result<T> Create<T>(string[] messages, IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) =>
         Result<T>.Error(new SocketTimeoutError(childError, messages, callerFilePath, callerLineNumber));
-    
 }
 
 public class OtherConnectionError : IErrorDetails
@@ -62,7 +62,8 @@ public class OtherConnectionError : IErrorDetails
     public string CallerFilePath { get; }
     public int CallerLineNumber { get; }
 
-    public OtherConnectionError(IErrorResult? childError, string[] messages, string callerFilePath, int callerLineNumber)
+    public OtherConnectionError(IErrorResult? childError, string[] messages, string callerFilePath,
+        int callerLineNumber)
     {
         ChildError = childError;
         Messages = messages;
@@ -71,11 +72,11 @@ public class OtherConnectionError : IErrorDetails
     }
 
     public static Result<T> Create<T>(
-            string message,
-            IErrorResult? childError = null,
-            [CallerFilePath] string callerFilePath = "",
-            [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
-            Create<T>([message], childError, callerFilePath, callerLineNumber);
+        string message,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
+        Create<T>([message], childError, callerFilePath, callerLineNumber);
 
     public static Result<T> Create<T>(
         string[] messages,
@@ -83,5 +84,4 @@ public class OtherConnectionError : IErrorDetails
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
         Result<T>.Error(new OtherConnectionError(childError, messages, callerFilePath, callerLineNumber));
-
 }

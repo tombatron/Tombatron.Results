@@ -16,6 +16,11 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
     public override async Task ComputeRefactoringsAsync(CodeRefactoringContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+        if (root is null)
+        {
+            return;
+        }
         
         var node = root.FindNode(context.Span);
 
@@ -31,6 +36,18 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
             return;
         }
         
+        var diagnostics = semanticModel.GetDiagnostics();
+        
+        var hasUnimplementedInterfaceMembers = diagnostics.Any(d =>
+            d.Id == "CS0535" &&
+            d.Location.SourceSpan.IntersectsWith(classDeclarationSyntax.Span));
+
+        if (!hasUnimplementedInterfaceMembers)
+        {
+            // Interface is fully implemented - we're not going to offer the refactoring. 
+            return;
+        }
+        
         var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax, context.CancellationToken);
         
         if (classSymbol == null || !classSymbol.AllInterfaces.Any(i => i.Name == "IErrorDetails"))
@@ -38,7 +55,7 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
             return;
         }
         
-        var action = CodeAction.Create("Implement standard IErrorDetails implementation", c=> AddBoilerplate(context.Document, classDeclarationSyntax, c));
+        var action = CodeAction.Create("Implement IErrorDetails using standard template.", c=> AddBoilerplate(context.Document, classDeclarationSyntax, c));
         
         context.RegisterRefactoring(action);
     }

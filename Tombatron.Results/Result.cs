@@ -9,6 +9,8 @@ public class Result<T> where T : notnull
     public static Result<T> Ok(T value) => 
         new Ok<T>(value);
     
+    public static Result<T> Error(IErrorDetails errorDetails) => new Error<T>(errorDetails);
+    
     public static Result<T> Error(
         string[] messages, 
         IErrorResult? childError = null, 

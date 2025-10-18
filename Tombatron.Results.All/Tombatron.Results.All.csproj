@@ -8,9 +8,9 @@
     <Authors>Tom Hanks (tombatron)</Authors>
     <Description>This package combines the Tombatron.Results and Tombatron.Results.Analyzers package into one convenient place.</Description>
 
-    <Version>3.1.0</Version>
-    <FileVersion>3.1.0</FileVersion>
-    <AssemblyVersion>3.1.0</AssemblyVersion>
+    <Version>3.2.0</Version>
+    <FileVersion>3.2.0</FileVersion>
+    <AssemblyVersion>3.2.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

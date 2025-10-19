@@ -1,6 +1,13 @@
-using System.Runtime.CompilerServices;
 
-namespace Tombatron.Results.Analyzers.Sample;
+
+using System.Runtime.CompilerServices;
+using Tombatron.Results;
+
+namespace Whatever;
+
+
+
+
 
 public class ErrorDetailsExample
 {
@@ -47,7 +54,7 @@ public class SocketTimeoutError : IErrorDetails
         IErrorResult? childError = null,
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
-        Create<T>([message], childError, callerFilePath, callerLineNumber);
+        Create<T>(new string[] { message }, childError, callerFilePath, callerLineNumber);
 
     public static Result<T> Create<T>(
         string[] messages,
@@ -87,3 +94,4 @@ public class OtherConnectionError : IErrorDetails
         [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
         Result<T>.Error(new OtherConnectionError(childError, messages, callerFilePath, callerLineNumber));
 }
+

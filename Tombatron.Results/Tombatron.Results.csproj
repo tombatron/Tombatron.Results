@@ -5,9 +5,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         
-        <Version>3.2.0</Version>
-        <FileVersion>3.2.0</FileVersion>
-        <AssemblyVersion>3.2.0</AssemblyVersion>
+        <Version>3.2.3</Version>
+        <FileVersion>3.2.3</FileVersion>
+        <AssemblyVersion>3.2.3</AssemblyVersion>
         
         <Title>Tombatron.Results</Title>
         <Authors>Tom Hanks (tombatron)</Authors>

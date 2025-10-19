@@ -21,23 +21,24 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
         {
             return;
         }
-        
+
         var node = root.FindNode(context.Span);
 
         if (node is not ClassDeclarationSyntax classDeclarationSyntax)
         {
             return;
         }
-        
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
         if (semanticModel is null)
         {
             return;
         }
-        
+
         var diagnostics = semanticModel.GetDiagnostics();
-        
+
         var hasUnimplementedInterfaceMembers = diagnostics.Any(d =>
             d.Id == "CS0535" &&
             d.Location.SourceSpan.IntersectsWith(classDeclarationSyntax.Span));
@@ -47,57 +48,98 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
             // Interface is fully implemented - we're not going to offer the refactoring. 
             return;
         }
-        
+
         var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax, context.CancellationToken);
-        
+
         if (classSymbol == null || !classSymbol.AllInterfaces.Any(i => i.Name == "IErrorDetails"))
         {
             return;
         }
-        
-        var action = CodeAction.Create("Implement IErrorDetails using standard template.", c=> AddBoilerplate(context.Document, classDeclarationSyntax, c));
-        
+
+        var action = CodeAction.Create("Implement IErrorDetails using standard template.",
+            c => AddBoilerplate(context.Document, classDeclarationSyntax, c));
+
         context.RegisterRefactoring(action);
     }
 
-    private async Task<Document> AddBoilerplate(Document document, ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
+    private async Task<Document> AddBoilerplate(Document document, ClassDeclarationSyntax classDeclarationSyntax,
+        CancellationToken cancellationToken)
     {
-        var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
-        
-        // Make sure compiler services is imported. 
-        var root = editor.OriginalRoot;
-
-        if (root is CompilationUnitSyntax compilationUnit && compilationUnit.Usings.All(u => u.Name.ToString() != "System.Runtime.CompilerServices"))
-        {
-            var usingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Runtime.CompilerServices"));
-            
-            editor.InsertBefore(compilationUnit.Members.First(), usingDirective);
-        }
-        
+        var root = await document.GetSyntaxRootAsync(cancellationToken);
         var className = classDeclarationSyntax.Identifier.Text;
-        
+
+        // Make sure System.Runtime.CompilerServices is imported
+        if (root is CompilationUnitSyntax compilationUnit)
+        {
+            var hasCompilerServices =
+                compilationUnit.Usings.Any(u => u.Name?.ToString() == "System.Runtime.CompilerServices");
+            
+            var hasTombatronResults = 
+                compilationUnit.Usings.Any(u => u.Name?.ToString() == "Tombatron.Results");
+
+            var newCompilationUnit = compilationUnit;
+
+            if (!hasCompilerServices)
+            {
+                var usingDirective =
+                    SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Runtime.CompilerServices"));
+                
+                newCompilationUnit = compilationUnit.AddUsings(usingDirective);
+            }
+
+            if (!hasTombatronResults)
+            {
+                var usingDirective = 
+                    SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Tombatron.Result"));
+                
+                newCompilationUnit = newCompilationUnit.AddUsings(usingDirective); 
+            }
+
+            if (newCompilationUnit != compilationUnit)
+            {
+                document = document.WithSyntaxRoot(newCompilationUnit);    
+            }
+        }
+
+        // Create the editor with the potentially updated document
+        var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
+
+        // Find the class in the editor's current tree
+        var currentClass = editor.OriginalRoot.DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .First(c => c.Identifier.Text == className);
+
         var generator = editor.Generator;
 
-        // Complex types...
-        var stringArrayType = generator.ArrayTypeExpression(generator.TypeExpression(SpecialType.System_String));
+        // Complex types - create manually to avoid OmittedArraySizeExpression
+        var stringArrayType = SyntaxFactory.ArrayType(
+            SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.StringKeyword)),
+            SyntaxFactory.SingletonList(
+                SyntaxFactory.ArrayRankSpecifier(
+                    SyntaxFactory.SingletonSeparatedList<ExpressionSyntax>(
+                        SyntaxFactory.OmittedArraySizeExpression()))));
+
         var iErrorResultNullableType = SyntaxFactory.NullableType(SyntaxFactory.IdentifierName("IErrorResult"));
 
-        // Define the parameters
-        
+        // Define the properties
         var properties = new[]
         {
-            generator.PropertyDeclaration("ChildError", iErrorResultNullableType, Accessibility.Public, DeclarationModifiers.ReadOnly),
-            generator.PropertyDeclaration("Messages", stringArrayType, Accessibility.Public, DeclarationModifiers.ReadOnly),
-            generator.PropertyDeclaration("CallerFilePath", generator.TypeExpression(SpecialType.System_String), Accessibility.Public, DeclarationModifiers.ReadOnly),
-            generator.PropertyDeclaration("CallerLineNumber", generator.TypeExpression(SpecialType.System_Int32), Accessibility.Public, DeclarationModifiers.ReadOnly),
+            generator.PropertyDeclaration("ChildError", iErrorResultNullableType, Accessibility.Public,
+                DeclarationModifiers.ReadOnly),
+            generator.PropertyDeclaration("Messages", stringArrayType, Accessibility.Public,
+                DeclarationModifiers.ReadOnly),
+            generator.PropertyDeclaration("CallerFilePath", generator.TypeExpression(SpecialType.System_String),
+                Accessibility.Public, DeclarationModifiers.ReadOnly),
+            generator.PropertyDeclaration("CallerLineNumber", generator.TypeExpression(SpecialType.System_Int32),
+                Accessibility.Public, DeclarationModifiers.ReadOnly),
         };
 
         foreach (var prop in properties)
         {
-            editor.AddMember(classDeclarationSyntax, prop);
+            editor.AddMember(currentClass, prop);
         }
-        
-        // Define the constructor.
+
+        // Define the constructor
         var constructorArguments = new[]
         {
             generator.ParameterDeclaration("childError", iErrorResultNullableType),
@@ -116,21 +158,21 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
             generator.AssignmentStatement(generator.IdentifierName("CallerLineNumber"),
                 generator.IdentifierName("callerLineNumber"))
         };
-        
-        var ctor = generator.ConstructorDeclaration(className, constructorArguments, Accessibility.Public, statements: constructorStatements);
 
-        editor.AddMember(classDeclarationSyntax, ctor);
-        
+        var ctor = generator.ConstructorDeclaration(className, constructorArguments, Accessibility.Public,
+            statements: constructorStatements);
+
+        editor.AddMember(currentClass, ctor);
+
         // Static Create<T> methods
-        var createMethod1 = SyntaxFactory.ParseMemberDeclaration(@"
-        public static Result<T> Create<T>(
-            string message,
-            IErrorResult? childError = null,
-            [CallerFilePath] string callerFilePath = """",
-            [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
-            Create<T>([message], childError, callerFilePath, callerLineNumber);
-
-        ");
+        var createMethod1 = SyntaxFactory.ParseMemberDeclaration($@"
+    public static Result<T> Create<T>(
+        string message,
+        IErrorResult? childError = null,
+        [CallerFilePath] string callerFilePath = """",
+        [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
+        Create<T>(new string[] {{ message }}, childError, callerFilePath, callerLineNumber);
+    ");
 
         var createMethod2 = SyntaxFactory.ParseMemberDeclaration($@"
     public static Result<T> Create<T>(
@@ -139,10 +181,10 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
         [CallerFilePath] string callerFilePath = """",
         [CallerLineNumber] int callerLineNumber = 0) where T : notnull =>
         Result<T>.Error(new {className}(childError, messages, callerFilePath, callerLineNumber));
-        ");
+    ");
 
-        editor.AddMember(classDeclarationSyntax, createMethod1);
-        editor.AddMember(classDeclarationSyntax, createMethod2);
+        editor.AddMember(currentClass, createMethod1);
+        editor.AddMember(currentClass, createMethod2);
 
         return editor.GetChangedDocument();
     }

@@ -90,7 +90,7 @@ public class ImplementIErrorDetailsRefactoring : CodeRefactoringProvider
             if (!hasTombatronResults)
             {
                 var usingDirective = 
-                    SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Tombatron.Result"));
+                    SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Tombatron.Results"));
                 
                 newCompilationUnit = newCompilationUnit.AddUsings(usingDirective); 
             }

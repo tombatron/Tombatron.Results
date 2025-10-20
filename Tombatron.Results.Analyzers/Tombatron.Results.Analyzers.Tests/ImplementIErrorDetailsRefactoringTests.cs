@@ -123,6 +123,7 @@ public class [|SocketTimeoutError|] : IErrorDetails
 ";
 
         var expected = @"using System.Runtime.CompilerServices;
+using Tombatron.Results;
 
 namespace Tombatron.Results;
 

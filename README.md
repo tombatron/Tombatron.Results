@@ -144,7 +144,7 @@ public string ExampleMethod()
 
 Simple enough. Notice that I'm not handling the default case. You won't get a compiler warning about not handling the default case, because we know that there are only two possibilities (Ok and Error) so in this case we're using the analyzer to suppress the warning.
 
-**BUT!** What if you don't want to go through the motions of handling each possible outcome? Well, I ripped a page out of the Rust handbook and provided the methods `Unwrap()` and `UnwrapOf(T defaultValue)`. 
+**BUT!** What if you don't want to go through the motions of handling each possible outcome? Well, I ripped a page out of the Rust handbook and provided the methods `Unwrap()` and `UnwrapOr(T defaultValue)`. Since the non-generic version of the `Result` class doesn't carry any data with it, the convenience method for flattening a result is called `VerifyOk`. The result of this is essentially a no-op if there is no error but an exception if there is.  
 
 The `Unwrap()` method will assume you're after the `Ok<T>` value of the result, but if you call `Unwrap()` on an value that isn't `Ok<T>` the library will panic... er... it'll throw a `ResultUnwrapException`.
 

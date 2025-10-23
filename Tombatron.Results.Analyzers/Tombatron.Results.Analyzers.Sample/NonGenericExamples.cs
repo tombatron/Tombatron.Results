@@ -91,7 +91,14 @@ public class NonGenericExamples
         };
 
         return whatever;
-    }    
+    }
+
+    public void NoErrorBecauseWeAreCallingVerifyOk()
+    {
+        var workResult = DoWork();
+        
+        workResult.VerifyOk();
+    }
     
     public Result DoWork()
     {

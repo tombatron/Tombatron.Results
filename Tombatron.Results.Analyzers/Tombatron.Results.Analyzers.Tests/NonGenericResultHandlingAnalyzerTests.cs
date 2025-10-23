@@ -347,4 +347,26 @@ public class NonGenericResultHandlingAnalyzerTests
         
         await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
     }    
+    
+    [Fact]
+    public async Task SuppressedBecauseWeAreCallingVerifyOk()
+    {
+        const string testCode = @"
+        using System;
+        using Tombatron.Results;
+
+        class Program
+        {
+            void Main()
+            {
+                var workResult = DoWork();
+
+                workResult.VerifyOk();
+            }
+
+            Result DoWork() => Result.Ok;
+        }";
+        
+        await VerifyCS.VerifyAnalyzerAsync<ResultHandlingAnalyzer>(testCode);
+    }    
 }

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Tombatron.Results;
 
@@ -44,6 +45,19 @@ public class Result<T> where T : notnull
 
 public abstract class Result
 {
+    public void VerifyOk() 
+    {
+        if (this is Ok)
+        {
+            return;
+        }
+
+        if (this is Error error)
+        {
+            throw new ResultUnwrapException($"[ERROR] [{GetType().Name}]: {error.Messages[0]}");
+        }
+    }
+    
     public static readonly Result Ok = new Ok();
 
     public static Result Error(

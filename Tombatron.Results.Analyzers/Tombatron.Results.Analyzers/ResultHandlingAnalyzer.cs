@@ -81,7 +81,7 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                             }
 
                             return identifier.Identifier.Text == variable.Identifier.Text &&
-                                   methodSymbol.Name.StartsWith("Unwrap");
+                                   (methodSymbol.Name.StartsWith("Unwrap") || methodSymbol.Name.StartsWith("VerifyOk"));
                         }
 
                         return false;
@@ -293,11 +293,7 @@ public class ResultHandlingAnalyzer : DiagnosticAnalyzer
                         }
                     }
 
-                    var unwrapCalled =
-                        reference as
-                            InvocationExpressionSyntax; // Assuming that is this is here, then Unwrap or UnwrapOr was called.
-
-                    if (unwrapCalled != null)
+                    if (reference is InvocationExpressionSyntax)
                     {
                         // We're going to set these as true because we think that an Unwrap method has been called.
                         hasOkCase = true;
